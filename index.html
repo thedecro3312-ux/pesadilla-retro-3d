@@ -6,6 +6,7 @@
 <meta name="color-scheme" content="dark" />
 <link rel="icon" href="data:," />
 <title>Pesadilla Retro 3D — El Claro de la Niebla</title>
+
 <style>
   :root{
     --bg:#05060a; --panel:rgba(8,10,15,.88); --panel2:rgba(16,20,28,.94);
@@ -22,6 +23,10 @@
 
   /* ---------- overlays de pantalla completa ---------- */
   .overlay{position:absolute;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;text-align:center;background:radial-gradient(ellipse at 50% 40%, rgba(20,4,8,.55), rgba(0,0,0,.88));}
+  /* El menú creció con el selector de look: si el contenido no cabe en la
+     pantalla (móvil), se alinea arriba y se puede desplazar hasta el
+     último botón en vez de quedar cortado */
+  #menu{overflow-y:auto;justify-content:safe center}
   .overlay h1{margin:0;font-size:clamp(34px,8vw,64px);letter-spacing:.08em;color:#f5f0e6;text-shadow:0 0 24px rgba(193,18,31,.8),0 2px 0 #000;line-height:1}
   .overlay h1 .blood{color:var(--red2)}
   .overlay h2{margin:0;font-size:clamp(18px,4vw,26px);letter-spacing:.14em;color:var(--amber)}
@@ -75,6 +80,13 @@
   #btnRun.on{background:rgba(255,183,3,.75);color:#000}
   #btnUse{right:96px;bottom:56px;width:78px;height:78px;font-size:13px}
   #btnPauseT{right:14px;top:12px;width:46px;height:46px;border-radius:12px;font-size:18px}
+  /* ---------- pantalla completa ---------- */
+  #btnFSTouch{right:14px;top:66px;width:46px;height:46px;border-radius:12px}
+  #btnFSTouch svg{display:block}
+  .fsBtn{display:inline-flex;align-items:center;justify-content:center;gap:9px}
+  .fsBtn svg{flex:none}
+  #app:fullscreen{background:var(--bg);width:100%;height:100%}
+  #app:-webkit-full-screen{background:var(--bg);width:100%;height:100%}
   /* ---------- barra y lista de tareas (jugabilidad estilo Among Us) ---------- */
   #taskBarWrap{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-family:system-ui,sans-serif;backdrop-filter:blur(6px);max-width:94vw}
   .tbLabel{font-size:12px;font-weight:800;letter-spacing:.12em;color:#b7f5c0}
@@ -92,6 +104,13 @@
   #taskItems li.done::before{content:'☑ '}
   #sabChip{position:absolute;top:102px;left:50%;transform:translateX(-50%);background:rgba(90,60,0,.92);border:1px solid var(--amber);color:#ffe9a8;border-radius:8px;padding:7px 14px;font-family:system-ui,sans-serif;font-weight:800;letter-spacing:.08em;font-size:13px;white-space:nowrap;max-width:94vw}
   #staticFx{position:absolute;inset:0;z-index:25;pointer-events:none;opacity:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.16) 0 2px,rgba(0,0,0,.16) 2px 4px),repeating-linear-gradient(90deg,rgba(255,255,255,.08) 0 3px,transparent 3px 6px)}
+  /* ---------- acabado de cámara (pulido visual) ----------
+     Tinte de color por mapa (frío en el claro y el hospital, cálido en
+     la mansión), viñeta suave permanente y grano fino de película. Son
+     capas puramente visuales: no tapan el HUD ni cambian el juego. */
+  #gradeFx{position:absolute;inset:0;z-index:17;pointer-events:none;background:#3d4f73;opacity:.5;mix-blend-mode:soft-light}
+  #vigSoft{position:absolute;inset:0;z-index:18;pointer-events:none;background:radial-gradient(ellipse at center,transparent 56%,rgba(2,3,6,.42) 88%,rgba(1,2,4,.62) 100%)}
+  #grainFx{position:absolute;inset:0;width:100%;height:100%;z-index:23;pointer-events:none;opacity:.06;mix-blend-mode:overlay;image-rendering:pixelated}
   /* ---------- modo asesino ---------- */
   #hairFx{position:absolute;inset:0;z-index:24;pointer-events:none;opacity:0;transition:opacity .5s;background:repeating-linear-gradient(90deg, rgba(2,2,4,.88) 0 7px, transparent 7px 26px, rgba(2,2,4,.62) 26px 31px, transparent 31px 54px);-webkit-mask-image:linear-gradient(180deg,#000 0%,transparent 44%);mask-image:linear-gradient(180deg,#000 0%,transparent 44%)}
   /* Brazo de la Sadako en primera persona al atacar (solo modo asesino):
@@ -148,6 +167,18 @@
   #mpCodeIn{background:#101318;border:1px solid rgba(255,255,255,.3);border-radius:10px;color:#fff;font-size:20px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;width:180px;min-height:48px;padding:10px 12px;text-align:center;font-family:system-ui,sans-serif}
   #mpStatus{margin-top:12px;font-size:13px;color:var(--amber);min-height:18px;text-align:center;line-height:1.45}
   .btn.sel{outline:2px solid var(--amber);outline-offset:2px}
+  /* ---------- selector de look del sobreviviente (menú) ---------- */
+  #lookPick{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .lookBtn{display:inline-flex;align-items:center;gap:8px}
+  .lookBtn .sw{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.55);flex:none}
+  .lookNote{margin:0 !important;font-size:12.5px !important;color:var(--muted) !important;max-width:520px}
+  /* ---------- selector de mapa (menú y sala en línea) ---------- */
+  #mapPick{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .foto.file{background:linear-gradient(160deg,#5a5344,#23211a)}
+  .foto.file span{display:block;font-size:10px;font-weight:800;letter-spacing:.12em;color:#d8d2c0;padding-top:28px}
+  .foto.found{outline:3px solid var(--amber);opacity:1 !important}
+  .cajaDigit{font-size:52px;font-weight:900;color:#ffe9a8;letter-spacing:.1em;text-shadow:0 0 16px rgba(255,183,3,.5);line-height:1}
+  .cajaSlots{font-size:20px;font-weight:800;letter-spacing:.5em;color:#fff}
   @media (max-width:640px){
     #taskItems li{font-size:11.5px}
     #prompt{bottom:31%}
@@ -163,6 +194,9 @@
   <div id="bloodEdge"></div>
   <div id="fadeBlack"></div>
   <div id="staticFx"></div>
+  <div id="gradeFx"></div>
+  <div id="vigSoft"></div>
+  <canvas id="grainFx" width="160" height="90"></canvas>
   <div id="hairFx"></div>
   <div id="swingArm" aria-hidden="true">
     <svg viewBox="0 0 320 320">
@@ -194,8 +228,8 @@
 
   <div id="hud" class="hidden">
     <div id="hudTL">
-      <div id="taskList"><div class="taskHead">TAREAS DEL CLARO</div><ul id="taskItems"></ul></div>
-      <div id="killerInfo" class="hidden">ERES LA SADAKO<br>Él va por sus tareas: <b id="kInfoTasks">0/5</b><br>Tus golpes: <b id="kInfoHits">0/2</b></div>
+      <div id="taskList"><div class="taskHead" id="taskHeadEl">TAREAS DEL CLARO</div><ul id="taskItems"></ul></div>
+      <div id="killerInfo" class="hidden">ERES LA SADAKO<br>Van por sus tareas: <b id="kInfoTasks">0/5</b><br><span id="kInfoHitsLabel">Golpes a tu presa:</span> <b id="kInfoHits">0/2</b></div>
       <div class="chip sano" id="statusChip">SANO</div>
     </div>
     <div id="taskBarWrap"><span class="tbLabel">TAREAS</span><div id="taskBar"><i id="taskBarFill"></i></div><span id="taskCount">0/5</span></div>
@@ -205,7 +239,7 @@
     <div id="toast" class="hidden"></div>
     <div id="prompt" class="hidden"></div>
     <div id="crosshair"></div>
-    <div id="fpsHint">WASD moverse · Ratón mirar · Shift correr · E interactuar · Esc pausa</div>
+    <div id="fpsHint">WASD moverse · Ratón mirar · Shift correr · E interactuar · Esc pausa · F pantalla completa</div>
   </div>
 
   <div id="touchUI" class="hidden">
@@ -213,6 +247,7 @@
     <button class="tbtn" id="btnRun">CORRER</button>
     <button class="tbtn" id="btnUse">USAR</button>
     <button class="tbtn" id="btnPauseT">II</button>
+    <button class="tbtn" id="btnFSTouch" aria-label="Pantalla completa"></button>
   </div>
 
   <!-- PANEL DE MINIJUEGO DE TAREA -->
@@ -228,12 +263,26 @@
   <div id="mpPanel" class="hidden">
     <div id="mpCard">
       <div class="mpHead"><span class="mpTitle">MULTIJUGADOR EN LÍNEA</span><button id="mpClose" aria-label="Cerrar">✕</button></div>
-      <p class="mpTxt">Juega contra un amigo en el mismo claro: uno es el <b>sobreviviente</b> —hace las 5 tareas y escapa por una puerta— y el otro es <b>la Sadako</b> —viaja por las televisiones y lo caza con 2 golpes—. Sin cuentas: una sala con código de 4 letras.</p>
+      <p class="mpTxt">Partidas de <b>hasta 3 jugadores</b> en el mismo mapa, sin cuentas: una sala con código de 4 letras. El anfitrión elige el modo y <b>el mapa</b> al crear la sala —el mapa se sincroniza con todos— y los demás se unen; su papel se asigna al entrar. A cada sobreviviente se le asigna también un <b>look distinto, sin repetir</b> —chamarra naranja, azul con gorra roja o morado con banda amarilla—, respetando el look elegido en el menú si está libre. La partida empieza cuando están los 3, o cuando el anfitrión la inicie con 2.</p>
       <div id="mpHome">
-        <div class="taskHead">CREAR SALA · ELIGE TU PAPEL</div>
+        <div class="taskHead">CREAR SALA · MODO DE PARTIDA</div>
+        <div class="row" style="justify-content:flex-start;margin-bottom:8px">
+          <button class="btn sel" id="mpModeHunt">LA SADAKO CONTRA 2</button>
+          <button class="btn" id="mpModeCoop">3 CONTRA LA SADAKO IA</button>
+        </div>
+        <p class="mpTxt" id="mpModeDesc">Uno de los 3 jugadores es <b>la Sadako</b> y caza a los otros 2 sobrevivientes: 2 golpes atrapan a cada uno. Los sobrevivientes ganan si completan las 5 tareas y escapan por una puerta.</p>
+        <div class="taskHead">MAPA DE LA SALA · LO ELIGE EL ANFITRIÓN</div>
         <div class="row" style="justify-content:flex-start;margin-bottom:10px">
-          <button class="btn sel" id="mpRoleSurv">SOBREVIVIENTE</button>
-          <button class="btn killer" id="mpRoleKiller">LA SADAKO</button>
+          <button class="btn mapBtn sel" data-map="claro">EL CLARO</button>
+          <button class="btn mapBtn" data-map="mansion">LA MANSIÓN</button>
+          <button class="btn mapBtn" data-map="hospital">EL HOSPITAL</button>
+        </div>
+        <div id="mpRoleWrap">
+          <div class="taskHead">TU PAPEL COMO ANFITRIÓN</div>
+          <div class="row" style="justify-content:flex-start;margin-bottom:10px">
+            <button class="btn sel" id="mpRoleSurv">SOBREVIVIENTE</button>
+            <button class="btn killer" id="mpRoleKiller">LA SADAKO</button>
+          </div>
         </div>
         <button class="btn primary" id="mpCreate" style="width:100%">CREAR SALA</button>
         <div class="taskHead" style="margin-top:16px">UNIRSE A UNA SALA</div>
@@ -245,7 +294,8 @@
       <div id="mpWait" class="hidden">
         <div class="taskHead" id="mpWaitTitle">TU SALA · COMPARTE EL CÓDIGO</div>
         <div id="mpCode">····</div>
-        <p class="mpTxt" id="mpWaitTxt">Esperando a que el otro jugador se una…</p>
+        <p class="mpTxt" id="mpWaitTxt">Esperando a que los demás jugadores se unan…</p>
+        <p class="mpTxt" id="mpPlayers"></p>
         <button class="btn primary hidden" id="mpStart" style="width:100%">EMPEZAR PARTIDA</button>
       </div>
       <div id="mpStatus"></div>
@@ -255,31 +305,52 @@
   <!-- MENÚ -->
   <div id="menu" class="overlay">
     <h1>PESADILLA <span class="blood">RETRO</span> 3D</h1>
-    <p class="sub">El Claro de la Niebla · sobrevive… o sé la impostora</p>
-    <p>Los motores del claro ya son solo ruinas decorativas: ninguna tarea vive en ellos. Como <b>sobreviviente</b>, completa las 5 tareas en los rincones del ritual —el altar de velas, la cinta maldita, el sello de sal, las fotos y el santuario—, abre las puertas y escapa de la impostora, que no corre a cazarte: ACECHA desde las televisiones y solo ataca cuando ya está encima de ti. O al revés: en el <b>modo Asesino</b> TÚ eres la Sadako: sales de las teles, lo acechas entre la niebla y lo atrapas con dos golpes antes de que termine y escape.</p>
+    <p class="sub" id="menuSub">El Claro de la Niebla · sobrevive… o sé la impostora</p>
+    <p id="menuDesc">Los motores del claro ya son solo ruinas decorativas: ninguna tarea vive en ellos. Como <b>sobreviviente</b>, completa las 5 tareas en los rincones del ritual —el altar de velas, la cinta maldita, el sello de sal, las fotos y el santuario—, abre las puertas y escapa de la impostora, que no corre a cazarte: ACECHA desde las televisiones y solo ataca cuando ya está encima de ti. O al revés: en el <b>modo Asesino</b> TÚ eres la Sadako: sales de las teles, lo acechas entre la niebla y lo atrapas con dos golpes antes de que termine y escape.</p>
     <div id="loadbar"><div id="loadfill"></div></div>
     <div id="loadmsg">Cargando la niebla…</div>
+    <div id="mapPick">
+      <div class="taskHead">MAPA</div>
+      <div class="row">
+        <button class="btn mapBtn sel" data-map="claro">EL CLARO DE LA NIEBLA</button>
+        <button class="btn mapBtn" data-map="mansion">LA MANSIÓN ABANDONADA</button>
+        <button class="btn mapBtn" data-map="hospital">EL HOSPITAL ABANDONADO</button>
+      </div>
+      <p class="lookNote" id="mapNote">El mapa de siempre: el claro, sus casitas, el cobertizo y los rincones del ritual, con niebla fría y viento.</p>
+    </div>
+    <div id="lookPick">
+      <div class="taskHead">TU LOOK DE SOBREVIVIENTE</div>
+      <div class="row">
+        <button class="btn lookBtn sel" data-look="0"><span class="sw" style="background:#e8490f"></span>NARANJA</button>
+        <button class="btn lookBtn" data-look="1"><span class="sw" style="background:#2456d6"></span>AZUL · GORRA ROJA</button>
+        <button class="btn lookBtn" data-look="2"><span class="sw" style="background:#7e2a9e"></span>MORADO · BANDA AMARILLA</button>
+      </div>
+      <p class="lookNote">Es el look de tu sobreviviente: lo lleva la presa en el modo Asesino y es tu elección en línea. En multijugador, la sala asigna un look distinto a cada sobreviviente, sin repetir, respetando tu elección si está libre.</p>
+    </div>
     <div class="row">
       <button class="btn primary" id="btnPlay" disabled>SOBREVIVIENTE</button>
       <button class="btn killer" id="btnKiller" disabled>SER LA SADAKO</button>
       <button class="btn" id="btnMP" disabled>MULTIJUGADOR</button>
+      <button class="btn fsBtn" id="btnFSMenu">PANTALLA COMPLETA</button>
       <button class="btn" id="btnHow">CÓMO SE JUEGA</button>
     </div>
     <div id="howto" class="howto hidden">
       <h3>Objetivo</h3>
       <p>Completa las <b>5 tareas</b> de la lista: están en los <b>rincones del ritual</b> repartidos por el claro —el altar de velas del cobertizo, la mesa de la cinta de la casita noreste, el sello de sal del norte, el tablón de fotos de la casita suroeste y el santuario del este—, cada uno marcado con un <b>anillo ámbar</b> en el suelo. Acércate y pulsa <kbd>E</kbd> para abrir su <b>minijuego</b> (encender la vela ritual, rebobinar la cinta maldita, repetir el sello de sal o arrancar las fotos malditas). La <b>barra de tareas</b> de arriba marca tu progreso. Los <b>motores</b> repartidos por el mapa son <b>solo decoración</b>: ruinas que parpadean, sin ninguna tarea encima. Al completar las 5 se abren las <b>2 puertas de salida</b>: cruza una para escapar.</p>
       <h3>Controles</h3>
-      <p><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> moverse · ratón mirar · <kbd>Shift</kbd> correr · <kbd>E</kbd> abrir la tarea / soltar pallet · <kbd>Esc</kbd> pausa. En móvil: joystick, arrastra para mirar, botones CORRER y USAR. En el <b>modo Asesino</b>: <kbd>E</kbd> junto a una televisión para viajar por ella, <b>clic</b> o <kbd>F</kbd> para atacar (en móvil, el botón ATACAR), <kbd>Shift</kbd> para deslizarte rápido.</p>
+      <p><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> moverse · ratón mirar · <kbd>Shift</kbd> correr · <kbd>E</kbd> abrir la tarea / soltar pallet · <kbd>Esc</kbd> pausa. <b>Pantalla completa:</b> el botón del menú y de la pausa, el botón de la esquina superior derecha en móvil, o la tecla <kbd>F</kbd> (en el modo Asesino la <kbd>F</kbd> ataca: ahí usa el botón). En móvil: joystick, arrastra para mirar, botones CORRER y USAR. En el <b>modo Asesino</b>: <kbd>E</kbd> junto a una televisión para viajar por ella, <b>clic</b> o <kbd>F</kbd> para atacar (en móvil, el botón ATACAR), <kbd>Shift</kbd> para deslizarte rápido.</p>
       <h3>La Sadako</h3>
       <p>No caza rápido: <b>acecha</b>. Entra por una <b>televisión</b> del claro y sale por otra cerca de ti —si oyes la estática, ya se movió—. Desde lejos se queda <b>parada mirándote</b> entre la niebla; cuando se acerca lo hace <b>lento y encorvada</b>, y si la miras de frente se detiene. Las luces y tu linterna <b>parpadean</b> cuando está cerca, y una <b>estática</b> cada vez más fuerte —en la pantalla y en tus oídos— te avisa de que la tienes encima: si la estática llena la pantalla, está a un paso de ti. Solo persigue de verdad cuando ya está muy cerca: ahí corre, pero tu sprint la deja atrás. <b>El primer golpe te deja herido</b> y más lento; <b>el segundo te atrapa</b> y se acabó la partida. También <b>sabotea</b>: apaga las luces unos segundos (solo queda tu linterna) y cierra las puertas de salida temporalmente.</p>
       <h3>Modo Asesino: eres la Sadako</h3>
-      <p>Juegas en primera persona, con el pelo cayéndote sobre la cara. El sobreviviente de chamarra naranja recorre los rincones haciendo las <b>5 tareas</b>: la <b>barra roja</b> de arriba marca su progreso y, si las termina, las puertas se abren y escapa. Cázalo antes: acércate y ataca con <b>clic</b> o <kbd>F</kbd> —verás tu brazo pálido barrer la pantalla en cada golpe, y si aciertas, la pantalla destella en rojo con un <b>¡GOLPE!</b> y él se tambalea del empujón; el primer golpe lo hiere y lo frena, el segundo lo atrapa—. Junto a una <b>televisión</b>, pulsa <kbd>E</kbd> para meterte en ella y salir por la más cercana a él (10 s de enfriamiento). Él huye en cuanto te ve cerca: córtalo con las teles y con tu deslizamiento de <kbd>Shift</kbd>.</p>
-      <h3>Multijugador en línea</h3>
-      <p>Con el botón <b>MULTIJUGADOR</b> juegas contra un amigo en el mismo claro: uno crea la sala, elige su papel y comparte el <b>código de 4 letras</b>; el otro lo escribe y se une con el papel contrario. El sobreviviente hace las tareas y escapa como siempre; la Sadako es el otro jugador: viaja por las teles, golpea con clic o <kbd>F</kbd> y puede <b>romper los pallets caídos</b> quedándose junto a ellos y pulsando <kbd>E</kbd>. Si uno de los dos se desconecta, la partida termina.</p>
+      <p>Juegas en primera persona, con el pelo cayéndote sobre la cara. El sobreviviente —con el <b>look que elegiste</b> en el menú— recorre los rincones haciendo las <b>5 tareas</b>: la <b>barra roja</b> de arriba marca su progreso y, si las termina, las puertas se abren y escapa. Cázalo antes: acércate y ataca con <b>clic</b> o <kbd>F</kbd> —verás tu brazo pálido barrer la pantalla en cada golpe, y si aciertas, la pantalla destella en rojo con un <b>¡GOLPE!</b> y él se tambalea del empujón; el primer golpe lo hiere y lo frena, el segundo lo atrapa—. Junto a una <b>televisión</b>, pulsa <kbd>E</kbd> para meterte en ella y salir por la más cercana a él (10 s de enfriamiento). Él huye en cuanto te ve cerca: córtalo con las teles y con tu deslizamiento de <kbd>Shift</kbd>.</p>
+      <h3>Multijugador en línea (3 jugadores)</h3>
+      <p>Con el botón <b>MULTIJUGADOR</b> juegan hasta <b>3 en el mismo claro</b>: el anfitrión crea la sala, elige el <b>modo</b> y comparte el <b>código de 4 letras</b>; los demás lo escriben y se unen, y su papel se asigna al entrar. También se asigna a cada sobreviviente un <b>look distinto, sin repetir</b> —chamarra naranja, azul con gorra roja o morado con banda amarilla, los tres sobre el mismo modelo—, para no confundirse entre ustedes; se respeta el look elegido en el menú si está libre, y el vestíbulo muestra el look que le toca a cada quien. La partida empieza cuando están los 3, o cuando el anfitrión la inicie con 2. Hay dos modos: <b>La Sadako contra 2</b> —uno de los 3 es la Sadako y caza a los 2 sobrevivientes (2 golpes atrapan a cada uno); si el anfitrión es sobreviviente, el primer invitado será la Sadako— y <b>3 contra la Sadako IA</b> —los 3 son sobrevivientes y la impostora la controla la IA (la maneja el anfitrión)—. Las tareas son <b>del equipo</b>: entre todos completan las 5 y se abren las puertas; cada sobreviviente escapa por su cuenta. La Sadako viaja por las teles, golpea con clic o <kbd>F</kbd> y puede <b>romper los pallets caídos</b> quedándose junto a ellos y pulsando <kbd>E</kbd>. Si un sobreviviente se desconecta, la partida <b>sigue con los que queden</b>; si se va la Sadako, los sobrevivientes ganan; si se va el anfitrión, la partida termina avisando.</p>
       <h3>Pallets</h3>
       <p>Junto a un pallet, pulsa <kbd>E</kbd> cuando ella esté cerca para soltarlo: si le cae encima la aturde 2 s. El pallet caído <b>bloquea el paso</b>: ni tú ni ella lo atraviesan; ella tendrá que romperlo en ~2,5 s y no vuelve.</p>
       <h3>Las tareas</h3>
       <p>Mientras el panel de una tarea está abierto no te puedes mover, pero ella sigue suelta: si se te acerca demasiado, cierra el panel y corre. Terminar las 5 tareas es la única forma de abrir las puertas.</p>
+      <h3>Los mapas</h3>
+      <p>En el menú eliges entre <b>3 mapas</b>, cada uno con su ambiente —niebla, luces y sonidos propios— y sus <b>5 tareas temáticas</b>. <b>El Claro de la Niebla</b> es el de siempre, con los rincones del ritual. En <b>La Mansión Abandonada</b>: encender los candelabros del comedor, tocar el piano de la sala de música, dar cuerda al reloj del salón, encontrar su retrato en la biblioteca y abrir la caja fuerte del estudio. En <b>El Hospital Abandonado</b>: recoger los expedientes del archivo, encender la lámpara del quirófano, encontrar la llave del botiquín en la farmacia, activar los rayos X y preparar el suero en la sala de curas. La Sadako, las televisiones, los pallets, los sabotajes y la estática funcionan igual en los tres mapas. En multijugador, <b>el mapa lo elige el anfitrión</b> y se sincroniza con toda la sala.</p>
     </div>
   </div>
 
@@ -289,6 +360,7 @@
     <p>La niebla te espera…</p>
     <div class="row">
       <button class="btn primary" id="btnResume">REANUDAR</button>
+      <button class="btn fsBtn" id="btnFSPause">PANTALLA COMPLETA</button>
       <button class="btn" id="btnRestart">REINICIAR</button>
       <button class="btn ghost" id="btnQuit">MENÚ</button>
     </div>
@@ -416,6 +488,154 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
   // Solo casitas + cobertizo bloquean la visión de la Sadako
   var LOS_OBBS = OBBS.slice(0, 13);
 
+  /* ================= MAPAS: EL CLARO, LA MANSIÓN Y EL HOSPITAL =================
+     Tres ubicaciones, cada una con su ambiente (niebla, luces y sonidos),
+     su decoración y sus 5 tareas temáticas. El Claro es el mapa de
+     siempre —el .glb— y sigue siendo el mapa por defecto. La Mansión y
+     el Hospital se construyen con geometría simple sobre la misma
+     planta de 54 m (muros, mobiliario y rincones de tarea propios),
+     pero con las mismas reglas: la Sadako, las 6 televisiones, los 10
+     pallets, los sabotajes y la estática funcionan igual en los tres.
+     En el menú se elige con los botones de mapa; en multijugador lo
+     elige el anfitrión y el mapa viaja en los mensajes de sala
+     ('welcome', 'lobby', 'start' y 'restart') para sincronizar a todos.
+     Todas las posiciones de un mapa van SIN escalar: setMapData las
+     pasa por escPos (×MS) igual que se hizo siempre con el claro. */
+  var currentMap = 'claro';
+  var AMBIENT = { bg: 0x05070c, fog: 0x0a0f16, fogDensity: 0.038, ambColor: 0x33415e, ambInt: 0.55, moonColor: 0x8fa8d8, moonInt: 0.5 };
+  // Círculos del claro SIN escalar (los mismos de arriba: árboles,
+  // barriles y cajas, con el radio ya ajustado), para reconstruir
+  // CIRCLES al volver a este mapa desde otro
+  var CLARO_CIRCLES = [
+    [-16.5, -6, 0.35], [-16, 15.5, 0.35], [16.5, 6.5, 0.35], [15.5, -15.5, 0.35], [-6.5, 15.5, 0.35], [6.5, -15.5, 0.35], [-16, 8.5, 0.35], [16, -8, 0.35], [-3, 16.5, 0.35], [3, -16.5, 0.35],
+    [-3.8, -3.2, 0.45], [3.8, 3.2, 0.45], [-13.8, -8.5, 0.45], [13.8, 8.5, 0.45], [-1.5, -11, 0.45], [11.5, 1.5, 0.45], [-11, -1.5, 0.45], [1.5, 11.5, 0.45],
+    [-4.2, 3.0, 0.63], [4.2, -3.0, 0.77], [-13, -9, 0.56], [13, 9, 0.7], [0, -10.5, 0.63], [-10.5, 0.5, 0.84], [10.5, -0.5, 0.56], [0.5, 10.5, 0.7]
+  ];
+  var MAP_DEFS = {
+    claro: {
+      name: 'El Claro de la Niebla', taskHead: 'TAREAS DEL CLARO',
+      ambient: { bg: 0x05070c, fog: 0x0a0f16, fogDensity: 0.038, ambColor: 0x33415e, ambInt: 0.55, moonColor: 0x8fa8d8, moonInt: 0.5 },
+      desc: 'Los motores del claro ya son solo ruinas decorativas: ninguna tarea vive en ellos. Como <b>sobreviviente</b>, completa las 5 tareas en los rincones del ritual —el altar de velas, la cinta maldita, el sello de sal, las fotos y el santuario—, abre las puertas y escapa de la impostora, que no corre a cazarte: ACECHA desde las televisiones y solo ataca cuando ya está encima de ti. O al revés: en el <b>modo Asesino</b> TÚ eres la Sadako: sales de las teles, lo acechas entre la niebla y lo atrapas con dos golpes antes de que termine y escape.',
+      note: 'El mapa de siempre: el claro, sus casitas, el cobertizo y los rincones del ritual, con niebla fría y viento.',
+      tasks: [
+        [0, 5.4, 0, 'vela', 'altar del cobertizo'],
+        [8.2, -9.6, -2.2, 'cinta', 'casita noreste'],
+        [-2.5, -14.6, 0, 'simbolos', 'claro norte'],
+        [-8.6, 8.6, 2.4, 'fotos', 'casita suroeste'],
+        [14.6, 4.6, -Math.PI / 2, 'vela', 'santuario del este']
+      ],
+      tvs: [[-8, -13.5], [13.5, -6], [-13.5, 7], [7, 14.5], [-4, -10.8], [12.5, 0.5]],
+      pallets: [
+        [-12.46, -9.15, -1.421, 0, 1], [12.35, -8.65, -1.771, 0, -1],
+        [-11.63, 14.84, -1.271, 0, 1], [11.52, 15.33, -1.921, 0, -1],
+        [0.30, -3.30, 1.571, 0, -1], [-2.50, -3.30, 1.571, 0, 1],
+        [-9.40, -9.76, 1.571, 0, 1], [9.43, -13.90, 1.571, 0, -1],
+        [-8.92, 9.60, 1.571, 0, -1], [8.92, 14.90, 1.571, 0, 1]
+      ],
+      waypoints: [[-8, -8], [8, -8], [8, 8], [-8, 8], [0, -13], [0, 13], [-13, 0], [13, 0], [-4, -4], [4, 4]]
+    },
+    mansion: {
+      name: 'La Mansión Abandonada', taskHead: 'TAREAS DE LA MANSIÓN',
+      ambient: { bg: 0x070403, fog: 0x140b06, fogDensity: 0.046, ambColor: 0x5a4030, ambInt: 0.5, moonColor: 0xd8b48f, moonInt: 0.22 },
+      floor: 0x2a1a12, wall: 0x3d2c22, trim: 0x6b4a2f, door: 0x2f2018,
+      desc: 'La mansión lleva décadas vacía, pero sus relojes se pararon a la hora de su muerte. Como <b>sobreviviente</b>, completa las 5 tareas de la casa —encender los candelabros del comedor, tocar el piano de la sala de música, dar cuerda al reloj del salón, encontrar su retrato en la biblioteca y abrir la caja fuerte del estudio—, abre las puertas y escapa de la impostora, que no corre a cazarte: ACECHA desde las televisiones y solo ataca cuando ya está encima de ti. O al revés: en el <b>modo Asesino</b> TÚ eres la Sadako: sales de las teles, lo acechas entre los muebles y lo atrapas con dos golpes antes de que termine y escape.',
+      note: 'Interior oscuro y cálido, a la luz de las velas: comedor, biblioteca, sala de música y estudio, con las 5 tareas de la casa y un piano que suena solo a lo lejos.',
+      tasks: [
+        [10.5, -13.6, 0, 'candelabros', 'el comedor'],
+        [14.6, -10.2, -Math.PI / 2, 'piano', 'la sala de música'],
+        [6.4, 0, -Math.PI / 2, 'reloj', 'el salón principal'],
+        [-13, -13.4, 0, 'retrato', 'la biblioteca'],
+        [13, 13.4, Math.PI, 'caja', 'el estudio']
+      ],
+      tvs: [[-14, -6.5], [14, -6.5], [-14, 6.5], [14, 6.5], [0, -13.2], [0, 13.2]],
+      pallets: [
+        [-10, -8, 0, 0, 1], [10, -8, 0, 0, -1], [-10, 8, 0, 0, -1], [10, 8, 0, 0, 1],
+        [0, -4.6, Math.PI / 2, 0, 1], [0, 4.6, Math.PI / 2, 0, -1],
+        [-2.5, -11.5, Math.PI / 2, 0, -1], [2.5, 11.5, Math.PI / 2, 0, 1],
+        [-15, 0, Math.PI / 2, 0, 1], [15, 0, Math.PI / 2, 0, -1]
+      ],
+      waypoints: [[-12, -12], [14, -13.5], [13.5, 10.5], [-12, 12], [0, -5], [0, 5], [-8, 0], [8, 0], [-2, -12.5], [2, 12.5]],
+      // Muros interiores: [x, z, rotY, longitud] — dejan huecos de puerta
+      walls: [
+        [-13.5, -8, 0, 5], [-7, -8, 0, 4], [7, -8, 0, 4], [13.5, -8, 0, 5],
+        [-13.5, 8, 0, 5], [-7, 8, 0, 4], [7, 8, 0, 4], [13.5, 8, 0, 5],
+        [-5, -11.5, Math.PI / 2, 7], [5, -11.5, Math.PI / 2, 7],
+        [-5, 11.5, Math.PI / 2, 7], [5, 11.5, Math.PI / 2, 7]
+      ],
+      // Mobiliario con colisión: {obb:[x,z,rot,hx,hz]} o {circle:[x,z,r]}
+      props: [
+        { obb: [0, 0, 0, 3.2, 2.2], kind: 'stairs' },
+        { obb: [-11, -14.55, 0, 3, 0.35], kind: 'shelf' },
+        { obb: [-15.55, -11.5, Math.PI / 2, 2.6, 0.35], kind: 'shelf' },
+        { obb: [10.5, -11.5, 0, 2.2, 0.9], kind: 'dining' },
+        { obb: [-11, 11.5, 0, 2, 0.8], kind: 'sofa' },
+        { obb: [11, 11.5, 0, 2, 0.8], kind: 'sofa' },
+        { obb: [-14.5, 13.8, 0, 1.8, 0.5], kind: 'desk' },
+        { circle: [-7, -5, 0.55], kind: 'statue' },
+        { circle: [7, -5, 0.55], kind: 'statue' },
+        { circle: [-7, 5, 0.55], kind: 'statue' },
+        { circle: [7, 5, 0.55], kind: 'statue' },
+        { circle: [0, -6.8, 0.5], kind: 'plant' },
+        { circle: [-15.5, -3, 0.5], kind: 'plant' },
+        { circle: [15.5, 3, 0.5], kind: 'plant' }
+      ]
+    },
+    hospital: {
+      name: 'El Hospital Abandonado', taskHead: 'TAREAS DEL HOSPITAL',
+      ambient: { bg: 0x030807, fog: 0x07120e, fogDensity: 0.042, ambColor: 0x2e4a44, ambInt: 0.5, moonColor: 0x9fd8c8, moonInt: 0.3 },
+      floor: 0x232b28, wall: 0x39423e, trim: 0x1f5f56, door: 0x3a4642,
+      desc: 'El hospital cerró hace años, pero las lámparas del quirófano siguen parpadeando. Como <b>sobreviviente</b>, completa las 5 tareas del hospital —recoger los expedientes del archivo, encender la lámpara del quirófano, encontrar la llave del botiquín en la farmacia, activar los rayos X y preparar el suero en la sala de curas—, abre las puertas y escapa de la impostora, que no corre a cazarte: ACECHA desde las televisiones y solo ataca cuando ya está encima de ti. O al revés: en el <b>modo Asesino</b> TÚ eres la Sadako: sales de las teles, lo acechas por los pasillos y lo atrapas con dos golpes antes de que termine y escape.',
+      note: 'Pasillos fríos de luz verdosa: quirófano, archivo, farmacia, rayos X y sala de curas, con pitidos de monitor sonando a lo lejos.',
+      tasks: [
+        [-13, -12.2, 0, 'expedientes', 'el archivo'],
+        [0, -12.4, 0, 'lampara', 'el quirófano'],
+        [13, 12.2, Math.PI, 'llave', 'la farmacia'],
+        [13, -12.2, 0, 'rayosx', 'la sala de rayos X'],
+        [-13, 12.2, 0, 'suero', 'la sala de curas']
+      ],
+      tvs: [[-15, 0], [15, 0], [0, -6], [7, 7], [-8, -13.5], [8, 13.5]],
+      pallets: [
+        [-9, -2.5, 0, 0, 1], [0, -2.5, 0, 0, -1], [9, -2.5, 0, 0, 1],
+        [-9, 2.5, 0, 0, -1], [0, 2.5, 0, 0, 1], [9, 2.5, 0, 0, -1],
+        [-5, -6, Math.PI / 2, 0, 1], [5, 6, Math.PI / 2, 0, -1],
+        [-13, -5.5, Math.PI / 2, 0, -1], [13, 5.5, Math.PI / 2, 0, 1]
+      ],
+      waypoints: [[-12, -4], [13, -5.5], [12, 4], [-13, 5.5], [0, -10.5], [0, 11], [-11, 13.5], [11, -13.5], [0, 0], [-7, 0]],
+      // Pasillo central en cruz con habitaciones a los lados
+      walls: [
+        [-12.75, -2.5, 0, 6.5], [-4.75, -2.5, 0, 7.5], [4.75, -2.5, 0, 7.5], [12.75, -2.5, 0, 6.5],
+        [-12.75, 2.5, 0, 6.5], [-4.75, 2.5, 0, 7.5], [4.75, 2.5, 0, 7.5], [12.75, 2.5, 0, 6.5],
+        [-10.5, -9, 0, 11], [10.5, -9, 0, 11], [-10.5, 9, 0, 11], [10.5, 9, 0, 11],
+        [-5, -12, Math.PI / 2, 6], [5, -12, Math.PI / 2, 6], [-5, 12, Math.PI / 2, 6], [5, 12, Math.PI / 2, 6],
+        [-10, -5.75, Math.PI / 2, 6.5], [10, -5.75, Math.PI / 2, 6.5], [-10, 5.75, Math.PI / 2, 6.5], [10, 5.75, Math.PI / 2, 6.5]
+      ],
+      props: [
+        { obb: [-14.8, -5.75, Math.PI / 2, 1.7, 0.75], kind: 'bed' },
+        { obb: [14.8, -5.75, Math.PI / 2, 1.7, 0.75], kind: 'bed' },
+        { obb: [-14.8, 5.75, Math.PI / 2, 1.7, 0.75], kind: 'bed' },
+        { obb: [14.8, 5.75, Math.PI / 2, 1.7, 0.75], kind: 'bed' },
+        { obb: [0, 5.5, 0, 2.4, 0.8], kind: 'recept' },
+        { obb: [-13.5, 14.3, 0, 2.4, 0.45], kind: 'cabinet' },
+        { obb: [13.5, -14.3, 0, 2.4, 0.45], kind: 'cabinet' },
+        { circle: [-3, -13.8, 0.45], kind: 'tank' },
+        { circle: [3, -13.8, 0.45], kind: 'tank' },
+        { circle: [6, -4, 0.55], kind: 'tank' },
+        { circle: [-15, -1.2, 0.5], kind: 'wheel' },
+        { circle: [15, 1.2, 0.5], kind: 'wheel' }
+      ]
+    }
+  };
+  function setMapData(id) {
+    var def = MAP_DEFS[id] || MAP_DEFS.claro;
+    currentMap = MAP_DEFS[id] ? id : 'claro';
+    TASK_SPOTS = escPos(def.tasks);
+    TV_POS = escPos(def.tvs);
+    PALLET_POS = escPos(def.pallets);
+    WAYPOINTS = escPos(def.waypoints);
+    DOOR_POS = escPos([[-17.6, 0], [17.6, 0]]);
+    AMBIENT = def.ambient;
+  }
+
   /* ================= ESTADO ================= */
   var S = {
     screen: 'menu', // menu | playing | paused | end
@@ -430,13 +650,123 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
   };
   var player = { x: 0, z: 14 * MS, yaw: 0, pitch: 0, vy: 0, stepAcc: 0 };
   var sadako = { x: 0, z: -14 * MS, yaw: 0, state: 'patrol', wp: 0, speed: 1.05, cooldown: 0, stun: 0, pauseT: 0, investigate: null, invT: 0, breakTarget: -1, breakT: 0, walkPhase: 0, attackT: 0, lastStep: 0, path: null, pathI: 0, repathT: 0, pathTX: 1e9, pathTZ: 1e9, steerX: 0, steerZ: -14 * MS, stuckT: 0, ventCD: 10, ventT: 0, ventFrom: -1, stalkT: 0, scareT: 2.5, flickT: 0 };
-  // La presa del modo asesino: el sobreviviente de chamarra naranja (IA)
+  // La presa del modo asesino: el sobreviviente IA (con el look elegido en el menú)
   var prey = { x: 0, z: 14 * MS, yaw: Math.PI, state: 'toTask', taskIdx: -1, doT: 0, needT: 7, health: 0, fleeT: 0, flinchT: 0, path: null, pathI: 0, repathT: 0, pathTX: 1e9, pathTZ: 1e9, steerX: 0, steerZ: 0, stuckT: 0, walkPhase: 0 };
+  // Segunda presa remota (multijugador de 3): mismo aspecto, otra posición
+  var prey2 = { x: 3.5, z: 13 * MS, yaw: Math.PI, state: 'toTask', taskIdx: -1, doT: 0, needT: 7, health: 0, fleeT: 0, flinchT: 0, path: null, pathI: 0, repathT: 0, pathTX: 1e9, pathTZ: 1e9, steerX: 0, steerZ: 0, stuckT: 0, walkPhase: 0 };
   // El jugador-asesino: enfriamientos de ataque y de viaje por televisión
   var killer = { atkCD: 0, tvCD: 0, swingT: 0 };
   var SWING_DUR = 0.38; // duración del barrido del brazo al atacar
   // Realimentación del golpe en primera persona: destello, marca, sacudida
   var hitFxT = 0, hitMarkT = 0, camShake = 0, fovKick = 0;
+
+  /* ================= LOOKS DEL SOBREVIVIENTE =================
+     Tres looks sobre el MISMO modelo (como en el juego 2D): se recolorean
+     las piezas de la chamarra (torso, franja, cuello, hombros, botones y
+     mangas) y se añade el accesorio de la cabeza como hijo del nodo
+     'cabeza', para que siga sus poses: gorra roja en el look azul y banda
+     amarilla en el morado. El look 0 es el principal (chamarra naranja):
+     restaura los colores exactos con los que cargó el modelo, que se
+     fotografían la primera vez que se pinta cada instancia. */
+  var LOOK_DEFS = [
+    { name: 'NARANJA', main: null, trim: null, dark: null, acc: null, accColor: 0, accDark: 0 },
+    { name: 'AZUL · GORRA ROJA', main: 0x2456d6, trim: 0x173a8f, dark: 0x0c1e4a, acc: 'gorra', accColor: 0xc1121f, accDark: 0x8f0d18 },
+    { name: 'MORADO · BANDA AMARILLA', main: 0x7e2a9e, trim: 0x521d6b, dark: 0x2c0f3d, acc: 'banda', accColor: 0xffc400, accDark: 0xd9a400 }
+  ];
+  var LOOK_NODES = {
+    main: ['torso_chamarra'],
+    trim: ['torso_franja_cintura', 'torso_cuello', 'torso_hombro_izquierdo', 'torso_hombro_derecho'],
+    dark: ['torso_boton_1', 'torso_boton_2', 'torso_boton_3', 'torso_boton_4', 'torso_boton_5'],
+    sleeve: ['brazo_izquierdo_manga', 'brazo_derecho_manga'],
+    sleeveDark: ['brazo_izquierdo_antebrazo', 'brazo_derecho_antebrazo']
+  };
+  var myLook = 0; // look elegido en el menú; en línea es tu preferencia
+  function lookSnapshot(root) {
+    if (root.userData.lookOrig) return root.userData.lookOrig;
+    var orig = {};
+    Object.keys(LOOK_NODES).forEach(function (role) {
+      LOOK_NODES[role].forEach(function (nm) {
+        var node = root.getObjectByName(nm);
+        if (node && node.material && node.material.color) orig[nm] = node.material.color.getHex();
+      });
+    });
+    root.userData.lookOrig = orig;
+    return orig;
+  }
+  function lookAccBuild(def) {
+    // Accesorio en el espacio local del nodo 'cabeza' (la cara mira a +Z;
+    // la coronilla del pelo queda hacia y≈0.33)
+    var grp = new THREE.Group();
+    grp.name = 'lookAcc';
+    if (def.acc === 'gorra') {
+      var crown = new THREE.Mesh(
+        new THREE.SphereGeometry(0.163, 14, 9, 0, Math.PI * 2, 0, Math.PI * 0.55),
+        new THREE.MeshStandardMaterial({ color: def.accColor, roughness: 0.85 }));
+      crown.position.set(0.003, 0.225, 0.006);
+      crown.scale.set(1, 0.92, 1.12);
+      grp.add(crown);
+      var brim = new THREE.Mesh(
+        new THREE.BoxGeometry(0.19, 0.018, 0.17),
+        new THREE.MeshStandardMaterial({ color: def.accDark, roughness: 0.85 }));
+      brim.position.set(0.003, 0.238, 0.2);
+      brim.rotation.x = 0.14;
+      grp.add(brim);
+      var btnTop = new THREE.Mesh(
+        new THREE.SphereGeometry(0.03, 8, 8),
+        new THREE.MeshStandardMaterial({ color: def.accDark, roughness: 0.85 }));
+      btnTop.position.set(0.003, 0.378, 0.006);
+      grp.add(btnTop);
+    } else if (def.acc === 'banda') {
+      var band = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.156, 0.159, 0.062, 16, 1, true),
+        new THREE.MeshStandardMaterial({ color: def.accColor, roughness: 0.8, side: THREE.DoubleSide }));
+      band.position.set(0.003, 0.208, 0.006);
+      band.scale.set(1, 1, 1.12);
+      grp.add(band);
+      var knot = new THREE.Mesh(
+        new THREE.BoxGeometry(0.05, 0.075, 0.02),
+        new THREE.MeshStandardMaterial({ color: def.accDark, roughness: 0.8 }));
+      knot.position.set(0.1, 0.185, -0.145);
+      knot.rotation.z = 0.5;
+      grp.add(knot);
+    }
+    return grp;
+  }
+  function applyLook(root, idx) {
+    if (!root) return;
+    idx = Math.max(0, Math.min(2, idx | 0));
+    var def = LOOK_DEFS[idx];
+    var orig = lookSnapshot(root);
+    function paint(names, hex) {
+      names.forEach(function (nm) {
+        var node = root.getObjectByName(nm);
+        if (!node || !node.material || !node.material.color) return;
+        var target = (hex === null || typeof hex === 'undefined') ? orig[nm] : hex;
+        if (typeof target === 'number') node.material.color.setHex(target);
+      });
+    }
+    paint(LOOK_NODES.main, def.main);
+    paint(LOOK_NODES.trim, def.trim);
+    paint(LOOK_NODES.dark, def.dark);
+    paint(LOOK_NODES.sleeve, def.main);
+    paint(LOOK_NODES.sleeveDark, def.trim);
+    var head = root.getObjectByName('cabeza');
+    if (head) {
+      var old = head.getObjectByName('lookAcc');
+      if (old) head.remove(old);
+      if (def.acc) head.add(lookAccBuild(def));
+    }
+    root.userData.look = idx;
+  }
+  function setMyLook(i) {
+    myLook = Math.max(0, Math.min(2, i | 0));
+    var btns = document.querySelectorAll('.lookBtn');
+    for (var b = 0; b < btns.length; b++) {
+      btns[b].classList.toggle('sel', parseInt(btns[b].getAttribute('data-look'), 10) === myLook);
+    }
+    if (survModel) applyLook(survModel, myLook);
+    if (!mp.active && survGame) applyLook(survGame, myLook);
+  }
 
   /* ================= THREE: ESCENA BASE ================= */
   var renderer, scene, camera, clock;
@@ -447,8 +777,14 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
   var tasks = []; // rincones de tarea: {group, x, z, rot, done, miniType, place, ringMat, light}
   var survGame = null, survGameParts = {};
   var SURV_GAME_HOME = {};
+  // Segunda instancia del sobreviviente: el segundo jugador remoto en las
+  // partidas de 3 (multijugador) se dibuja con este modelo y su entidad prey2
+  var survGame2 = null, survGame2Parts = {};
+  var SURV_GAME2_HOME = {};
   var pallets = []; // {pivot, group, pos, rot, state, fallSign, anim}
   var doorLeaves = [];
+  var claroDoorLeaves = null; // hojas del .glb del claro, para volver a él
+  var procGroup = null, procDoorLeaves = []; // mundo procedural (mansión/hospital)
   var doorLights = [];
   var SADAKO_HOME = {};
   var SURV_HOME = {};
@@ -465,6 +801,9 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.15;
+    // Sombras suaves (PCF soft): las proyectan la luna y la linterna
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x05070c);
     scene.fog = new THREE.FogExp2(0x0a0f16, 0.038);
@@ -474,10 +813,23 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     scene.add(ambLight);
     moonLight = new THREE.DirectionalLight(0x8fa8d8, 0.5);
     moonLight.position.set(-12, 24, -8);
+    moonLight.castShadow = true;
+    moonLight.shadow.mapSize.set(isTouch ? 1024 : 2048, isTouch ? 1024 : 2048);
+    moonLight.shadow.camera.left = -38; moonLight.shadow.camera.right = 38;
+    moonLight.shadow.camera.top = 38; moonLight.shadow.camera.bottom = -38;
+    moonLight.shadow.camera.near = 2; moonLight.shadow.camera.far = 75;
+    moonLight.shadow.bias = -0.0004;
+    moonLight.shadow.normalBias = 0.03;
     scene.add(moonLight);
     // Linterna: foco que sigue a la cámara + halo corto
     flash = new THREE.SpotLight(0xffe6b0, 60, 22, 0.55, 0.45, 1.4);
     flash.position.set(0, 0, 0);
+    flash.castShadow = true;
+    flash.shadow.mapSize.set(isTouch ? 512 : 1024, isTouch ? 512 : 1024);
+    flash.shadow.camera.near = 0.4;
+    flash.shadow.camera.far = 24;
+    flash.shadow.bias = -0.003;
+    flash.shadow.normalBias = 0.02;
     scene.add(flash);
     scene.add(flash.target);
     var fill = new THREE.PointLight(0xffd9a0, 2.2, 4.5, 1.6);
@@ -492,15 +844,17 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     scene.add(moon);
     // Suelo del escaparate del menú
     var disc = new THREE.Mesh(new THREE.CircleGeometry(9, 40),
-      new THREE.MeshStandardMaterial({ color: 0x14161c, roughness: 1 }));
+      new THREE.MeshStandardMaterial({ color: 0x14161c, roughness: 1, bumpMap: texDetail(), bumpScale: 0.03 }));
     disc.rotation.x = -Math.PI / 2;
     disc.position.y = -0.01;
     disc.name = 'menuGround';
+    disc.receiveShadow = true;
     scene.add(disc);
     var rim = new THREE.PointLight(0xc1121f, 12, 14, 1.8);
     rim.position.set(0, 3, -3);
     rim.name = 'menuRim';
     scene.add(rim);
+    buildAtmosphere(); // halo lunar, estrellas, niebla en capas, polvo, luciérnagas y charcos
     window.addEventListener('resize', resize);
     resize();
   }
@@ -509,6 +863,320 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
+  }
+
+  /* ================= PULIDO VISUAL =================
+     Todo lo de esta sección es SOLO imagen: no toca mecánicas,
+     modelos, mapas, colisiones ni red. Añade sombras suaves (luna y
+     linterna, configuradas en initThree), relieve procedural en las
+     superficies (los .glb vienen con colores planos, sin texturas:
+     un mapa de relieve generado por código les da madera, piedra y
+     metal sin cambiar ni un vértice), ventanas cálidas en las casitas
+     del claro, charcos que brillan con la luz (suelo mojado), niebla
+     en capas que deriva, halo lunar, estrellas, polvo en suspensión,
+     luciérnagas en el claro y el acabado de cámara por mapa (tinte
+     frío/cálido, viñeta suave y grano fino de película). */
+  var windowMats = []; // materiales propios de las ventanas del claro (luz cálida)
+  var procLights = []; // luces colgantes del mapa procedural en curso {l, base, warm}
+  var starsPts = null, starBase = 0.85, moonHalo = [];
+  var dustPts = null, dustSeed = [], firePts = null, fireSeed = [];
+  var fogBanks = [], puddleGroup = null, puddleMat = null;
+  var grainCtx = null, grainAcc = 0;
+
+  function fxCanvasTex(size, draw) {
+    var c = document.createElement('canvas');
+    c.width = c.height = size;
+    draw(c.getContext('2d'), size);
+    var t = new THREE.CanvasTexture(c);
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.anisotropy = 4;
+    return t;
+  }
+  var TEX = {};
+  // Ruido fino con manchas de desgaste: el relieve universal
+  function texDetail() {
+    if (TEX.detail) return TEX.detail;
+    TEX.detail = fxCanvasTex(256, function (g, s) {
+      g.fillStyle = '#808080'; g.fillRect(0, 0, s, s);
+      for (var i = 0; i < 9000; i++) {
+        var v = 96 + (Math.random() * 64) | 0;
+        g.fillStyle = 'rgb(' + v + ',' + v + ',' + v + ')';
+        g.fillRect(Math.random() * s, Math.random() * s, 1.6, 1.6);
+      }
+      for (var j = 0; j < 260; j++) {
+        var x = Math.random() * s, y = Math.random() * s, r = 6 + Math.random() * 22;
+        var gr = g.createRadialGradient(x, y, 0, x, y, r);
+        gr.addColorStop(0, Math.random() < 0.6 ? 'rgba(52,52,52,0.20)' : 'rgba(178,178,178,0.16)');
+        gr.addColorStop(1, 'rgba(128,128,128,0)');
+        g.fillStyle = gr;
+        g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();
+      }
+    });
+    return TEX.detail;
+  }
+  // Tablones de madera claros (el color del material los tiñe al multiplicar)
+  function texWood() {
+    if (TEX.wood) return TEX.wood;
+    TEX.wood = fxCanvasTex(256, function (g, s) {
+      g.fillStyle = '#cdbb9e'; g.fillRect(0, 0, s, s);
+      var rows = 4, rh = s / rows;
+      for (var r = 0; r < rows; r++) {
+        var y0 = r * rh, tone = 0.84 + Math.random() * 0.26;
+        g.fillStyle = 'rgba(' + (196 * tone | 0) + ',' + (164 * tone | 0) + ',' + (118 * tone | 0) + ',0.6)';
+        g.fillRect(0, y0, s, rh);
+        for (var i = 0; i < 44; i++) { // vetas onduladas
+          var y = y0 + Math.random() * rh;
+          g.strokeStyle = 'rgba(96,66,34,' + (0.10 + Math.random() * 0.15) + ')';
+          g.lineWidth = 0.8 + Math.random() * 1.3;
+          g.beginPath(); g.moveTo(0, y);
+          for (var x = 0; x <= s; x += 32) g.lineTo(x, y + Math.sin(x * 0.05 + r * 7 + i) * 1.6);
+          g.stroke();
+        }
+        g.fillStyle = 'rgba(38,24,10,0.9)'; g.fillRect(0, y0, s, 2); // junta del tablón
+        g.fillRect((r * 97) % s, y0, 2, rh); // corte vertical, desfasado por fila
+        g.fillStyle = 'rgba(52,52,58,0.95)'; // clavos
+        [[9, y0 + 7], [s - 9, y0 + 7], [9, y0 + rh - 7], [s - 9, y0 + rh - 7]].forEach(function (np) {
+          g.beginPath(); g.arc(np[0], np[1], 2.2, 0, 7); g.fill();
+        });
+      }
+    });
+    TEX.wood.colorSpace = THREE.SRGBColorSpace;
+    return TEX.wood;
+  }
+  // Baldosas de hospital: rejilla con juntas oscuras y desgaste
+  function texTile() {
+    if (TEX.tile) return TEX.tile;
+    TEX.tile = fxCanvasTex(256, function (g, s) {
+      g.fillStyle = '#c3cdc6'; g.fillRect(0, 0, s, s);
+      var n = 2, ts = s / n;
+      for (var a = 0; a < n; a++) for (var b = 0; b < n; b++) {
+        var tone = 0.88 + Math.random() * 0.18;
+        g.fillStyle = 'rgba(' + (178 * tone | 0) + ',' + (192 * tone | 0) + ',' + (182 * tone | 0) + ',0.65)';
+        g.fillRect(a * ts + 2, b * ts + 2, ts - 4, ts - 4);
+      }
+      for (var i = 0; i < 2600; i++) {
+        var v = 120 + (Math.random() * 90) | 0;
+        g.fillStyle = 'rgba(' + v + ',' + v + ',' + v + ',0.25)';
+        g.fillRect(Math.random() * s, Math.random() * s, 1.5, 1.5);
+      }
+      g.fillStyle = 'rgba(24,30,27,0.95)';
+      for (var k = 0; k <= n; k++) { g.fillRect(k * ts - 1, 0, 3, s); g.fillRect(0, k * ts - 1, s, 3); }
+    });
+    TEX.tile.colorSpace = THREE.SRGBColorSpace;
+    return TEX.tile;
+  }
+  // Resplandor radial suave (halo lunar, brillos)
+  function texGlow() {
+    if (TEX.glow) return TEX.glow;
+    TEX.glow = fxCanvasTex(128, function (g, s) {
+      var gr = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+      gr.addColorStop(0, 'rgba(255,255,255,0.9)');
+      gr.addColorStop(0.35, 'rgba(255,255,255,0.32)');
+      gr.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = gr; g.fillRect(0, 0, s, s);
+    });
+    return TEX.glow;
+  }
+  // Punto blando para partículas (polvo y luciérnagas)
+  function texDot() {
+    if (TEX.dot) return TEX.dot;
+    TEX.dot = fxCanvasTex(64, function (g, s) {
+      var gr = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+      gr.addColorStop(0, 'rgba(255,255,255,1)');
+      gr.addColorStop(0.4, 'rgba(255,255,255,0.5)');
+      gr.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = gr; g.fillRect(0, 0, s, s);
+    });
+    return TEX.dot;
+  }
+  // Mancha de niebla baja: elipse difuminada para los bancos en capas
+  function texFog() {
+    if (TEX.fog) return TEX.fog;
+    TEX.fog = fxCanvasTex(256, function (g, s) {
+      g.save();
+      g.translate(s / 2, s / 2); g.scale(1, 0.52);
+      var gr = g.createRadialGradient(0, 0, 0, 0, 0, s / 2);
+      gr.addColorStop(0, 'rgba(255,255,255,0.75)');
+      gr.addColorStop(0.55, 'rgba(255,255,255,0.30)');
+      gr.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = gr;
+      g.fillRect(-s / 2, -s / 2, s, s);
+      g.restore();
+    });
+    return TEX.fog;
+  }
+  // Material compartido de charco: oscuro y muy especular, para que la
+  // luna y la linterna se reflejen como en suelo mojado
+  function matPuddle() {
+    if (!puddleMat) puddleMat = new THREE.MeshPhongMaterial({
+      color: 0x0a0e14, specular: 0x9db8dd, shininess: 110,
+      transparent: true, opacity: 0.85, polygonOffset: true, polygonOffsetFactor: -2
+    });
+    return puddleMat;
+  }
+  function addPuddle(parent, x, y, z, r, squash) {
+    var p = new THREE.Mesh(new THREE.CircleGeometry(r, 22), matPuddle());
+    p.rotation.x = -Math.PI / 2;
+    p.rotation.z = Math.random() * Math.PI;
+    p.position.set(x, y, z);
+    p.scale.set(1, squash || 0.72, 1);
+    parent.add(p);
+    return p;
+  }
+  function makePoints(n, genPos, mat) {
+    var pos = new Float32Array(n * 3), seeds = [];
+    for (var i = 0; i < n; i++) {
+      var p = genPos(i);
+      pos[i * 3] = p[0]; pos[i * 3 + 1] = p[1]; pos[i * 3 + 2] = p[2];
+      seeds.push({ x: p[0], y: p[1], z: p[2], p1: Math.random() * 9, p2: Math.random() * 9, s1: 0.14 + Math.random() * 0.22, s2: 0.2 + Math.random() * 0.3 });
+    }
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    var pts = new THREE.Points(geo, mat);
+    pts.frustumCulled = false;
+    return { pts: pts, seeds: seeds };
+  }
+  function buildAtmosphere() {
+    // Halo de la luna: dos resplandores concéntricos tras el disco
+    var glow = texGlow();
+    [[30, 0.19], [13, 0.38]].forEach(function (hl) {
+      var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: 0x8fb0e8, transparent: true, opacity: hl[1], depthWrite: false, fog: false }));
+      sp.position.set(-30, 34, -60);
+      sp.scale.set(hl[0], hl[0], 1);
+      scene.add(sp);
+      moonHalo.push(sp);
+    });
+    // Estrellas: cúpula lejana que parpadea muy despacio
+    var sn = 650, spos = new Float32Array(sn * 3);
+    for (var i = 0; i < sn; i++) {
+      var a = Math.random() * Math.PI * 2, e = 0.12 + Math.random() * 1.35, r = 105;
+      spos[i * 3] = Math.cos(a) * Math.cos(e) * r;
+      spos[i * 3 + 1] = Math.sin(e) * r * 0.6 + 6;
+      spos[i * 3 + 2] = Math.sin(a) * Math.cos(e) * r;
+    }
+    var sg = new THREE.BufferGeometry();
+    sg.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+    starsPts = new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xcdd8ff, size: 1.5, sizeAttenuation: false, transparent: true, opacity: 0.8, fog: false, depthWrite: false }));
+    starsPts.frustumCulled = false;
+    scene.add(starsPts);
+    // Niebla en capas: bancos bajos que derivan y miran a la cámara,
+    // por encima de la niebla base de la escena
+    for (var b = 0; b < 9; b++) {
+      var bm = new THREE.Mesh(new THREE.PlaneGeometry(15 + Math.random() * 14, 3.5 + Math.random() * 3),
+        new THREE.MeshBasicMaterial({ map: texFog(), transparent: true, opacity: 0.05 + Math.random() * 0.055, depthWrite: false, color: AMBIENT.fog, side: THREE.DoubleSide }));
+      var ang = Math.random() * Math.PI * 2, rad = 9 + Math.random() * 17;
+      bm.position.set(Math.cos(ang) * rad, 0.9 + Math.random() * 1.1, Math.sin(ang) * rad);
+      bm.userData = { ph: Math.random() * 9, sp: 0.05 + Math.random() * 0.08, bx: bm.position.x, bz: bm.position.z };
+      scene.add(bm);
+      fogBanks.push(bm);
+    }
+    // Polvo en suspensión por todo el mapa
+    var dust = makePoints(isTouch ? 150 : 240, function () {
+      return [(Math.random() - 0.5) * 52, 0.2 + Math.random() * 3.4, (Math.random() - 0.5) * 52];
+    }, new THREE.PointsMaterial({ map: texDot(), color: 0xd9cfb2, size: 0.055, transparent: true, opacity: 0.38, depthWrite: false, blending: THREE.AdditiveBlending }));
+    dustPts = dust.pts; dustSeed = dust.seeds;
+    scene.add(dustPts);
+    // Luciérnagas del claro: puntos cálidos que vagan y parpadean
+    var fire = makePoints(42, function () {
+      return [(Math.random() - 0.5) * 46, 0.4 + Math.random() * 1.5, (Math.random() - 0.5) * 46];
+    }, new THREE.PointsMaterial({ map: texDot(), color: 0xaee86a, size: 0.085, transparent: true, opacity: 0.7, depthWrite: false, blending: THREE.AdditiveBlending }));
+    firePts = fire.pts; fireSeed = fire.seeds;
+    firePts.visible = false;
+    scene.add(firePts);
+    // Charcos del claro sobre caminos y claros de hierba
+    puddleGroup = new THREE.Group();
+    for (var pi = 0; pi < 13; pi++) {
+      var pa = pi * 2.399, pr = 4 + (pi % 5) * 4.2 + Math.random() * 1.6;
+      addPuddle(puddleGroup, Math.cos(pa) * pr, 0.03, Math.sin(pa) * pr * 0.9, 0.8 + Math.random() * 1.5, 0.6 + Math.random() * 0.3);
+    }
+    puddleGroup.visible = false;
+    scene.add(puddleGroup);
+    initGrain();
+    applyGrade(currentMap);
+  }
+  // Corrección de color por mapa: tinte, exposición y cielo
+  var GRADE = {
+    claro: { tint: '#3d4f73', op: 0.5, exp: 1.12, stars: 0.85, halo: 0x8fb0e8 },
+    mansion: { tint: '#7a4d20', op: 0.55, exp: 1.22, stars: 0.3, halo: 0xd8a86a },
+    hospital: { tint: '#27584a', op: 0.5, exp: 1.07, stars: 0.45, halo: 0x8fd8c0 }
+  };
+  function applyGrade(id) {
+    var g = GRADE[id] || GRADE.claro;
+    starBase = g.stars;
+    if (renderer) renderer.toneMappingExposure = g.exp;
+    var el = $('gradeFx');
+    if (el) { el.style.background = g.tint; el.style.opacity = String(g.op); }
+    for (var i = 0; i < fogBanks.length; i++) fogBanks[i].material.color.setHex(AMBIENT.fog);
+    for (var h = 0; h < moonHalo.length; h++) moonHalo[h].material.color.setHex(g.halo);
+  }
+  // Grano fino de película: ruido nuevo unas 10 veces por segundo
+  function initGrain() {
+    var c = $('grainFx');
+    if (c) grainCtx = c.getContext('2d');
+  }
+  function drawGrain() {
+    if (!grainCtx) return;
+    var id = grainCtx.createImageData(160, 90), d = id.data;
+    for (var i = 0; i < d.length; i += 4) {
+      var v = 96 + (Math.random() * 64) | 0;
+      d[i] = v; d[i + 1] = v; d[i + 2] = v; d[i + 3] = 255;
+    }
+    grainCtx.putImageData(id, 0, 0);
+  }
+  function driftPoints(pts, seeds, t, amp, bob) {
+    if (!pts) return;
+    var arr = pts.geometry.attributes.position.array;
+    for (var i = 0; i < seeds.length; i++) {
+      var s = seeds[i];
+      arr[i * 3] = s.x + Math.sin(t * s.s1 + s.p1) * amp;
+      arr[i * 3 + 1] = s.y + Math.sin(t * s.s2 + s.p2) * bob;
+      arr[i * 3 + 2] = s.z + Math.cos(t * s.s1 * 0.8 + s.p2) * amp;
+    }
+    pts.geometry.attributes.position.needsUpdate = true;
+  }
+  // Animación por fotograma de todo el pulido (se llama desde tick)
+  function updateAtmosphere(dt) {
+    if (!scene) return;
+    var t = S.time;
+    if (starsPts) starsPts.material.opacity = starBase * (0.82 + 0.18 * Math.sin(t * 0.6));
+    for (var h = 0; h < moonHalo.length; h++)
+      moonHalo[h].material.opacity = (h ? 0.38 : 0.19) * (0.9 + 0.1 * Math.sin(t * 0.4));
+    for (var b = 0; b < fogBanks.length; b++) {
+      var bk = fogBanks[b], u = bk.userData;
+      bk.position.x = u.bx + Math.sin(t * u.sp + u.ph) * 2.4;
+      bk.position.z = u.bz + Math.cos(t * u.sp * 0.8 + u.ph) * 1.6;
+      bk.lookAt(camera.position.x, bk.position.y, camera.position.z);
+    }
+    driftPoints(dustPts, dustSeed, t, 1.3, 0.32);
+    var inGame = S.screen === 'playing' || S.screen === 'paused';
+    var showFire = inGame && currentMap === 'claro';
+    if (firePts) {
+      firePts.visible = showFire;
+      if (showFire) {
+        firePts.material.opacity = 0.5 + 0.3 * Math.sin(t * 1.4);
+        driftPoints(firePts, fireSeed, t, 2.1, 0.5);
+      }
+    }
+    if (puddleGroup) puddleGroup.visible = inGame && currentMap === 'claro';
+    // Ventanas cálidas de las casitas: la llama tiembla tras el cristal
+    for (var w = 0; w < windowMats.length; w++)
+      windowMats[w].emissiveIntensity = 0.5 + 0.13 * Math.sin(t * 9 + w * 1.93) * Math.sin(t * 3.7 + w);
+    // Luces de los rincones de tarea: llama viva (el color lo manda el juego)
+    for (var k = 0; k < tasks.length; k++) {
+      var tk = tasks[k];
+      if (tk && tk.light && tk.group.visible)
+        tk.light.intensity = 5 * (0.84 + 0.16 * Math.sin(t * 11 + k * 1.7) * Math.sin(t * 5.1 + k * 2.3));
+    }
+    // Luces colgantes: vela cálida que tiembla en la mansión,
+    // fluorescente que parpadea a veces en el hospital
+    for (var p = 0; p < procLights.length; p++) {
+      var pl2 = procLights[p];
+      pl2.l.intensity = pl2.base * (pl2.warm
+        ? (0.86 + 0.14 * Math.sin(t * 10 + p * 2.1) * Math.sin(t * 4.3 + p))
+        : (0.94 + 0.06 * Math.sin(t * 47 + p * 3.0)) * (Math.sin(t * 0.7 + p * 1.3) > 0.996 ? 0.35 : 1));
+    }
+    grainAcc += dt;
+    if (grainAcc > 0.1) { grainAcc = 0; drawGrain(); }
   }
 
   /* ================= CARGA DE GLB ================= */
@@ -529,6 +1197,8 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
   function ground(obj) {
     var box = new THREE.Box3().setFromObject(obj);
     obj.position.y -= box.min.y;
+    // Los personajes proyectan y reciben sombras suaves (solo visual)
+    obj.traverse(function (o) { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
   }
   function collectParts(root, names) {
     var out = {};
@@ -566,9 +1236,25 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
   }
 
   function buildWorld() {
-    // --- Mapa: ocultar sus generadores y pallets simplificados ---
+    // --- Mapa: sombras suaves y relieve en todo el claro; las ventanas
+    // de las casitas y el cobertizo reciben un material propio con luz
+    // cálida (comparten material con las puertas: se clona solo aquí) ---
     mapGroup.traverse(function (o) {
-      if (o.isMesh) { o.receiveShadow = false; o.castShadow = false; }
+      if (o.isMesh) {
+        o.receiveShadow = true; o.castShadow = true;
+        if (o.material && o.material.isMeshStandardMaterial) {
+          if (!o.material.bumpMap && o.geometry && o.geometry.attributes && o.geometry.attributes.uv) {
+            o.material.bumpMap = texDetail();
+            o.material.bumpScale = 0.015;
+          }
+          if (o.name && o.name.indexOf('ventana') >= 0) {
+            o.material = o.material.clone();
+            o.material.emissive = new THREE.Color(0xff8f3d);
+            o.material.emissiveIntensity = 0.5;
+            windowMats.push(o.material);
+          }
+        }
+      }
     });
     for (var i = 1; i <= 8; i++) {
       var g = mapGroup.getObjectByName('generador_' + i);
@@ -593,7 +1279,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
         holder.visible = false; // el menú no los muestra; startGame los enciende
         loadGLB(GLB_GENERADOR, function (gltf) {
           var m = gltf.scene;
-          m.traverse(function (o) { if (o.isMesh) { o.castShadow = false; o.receiveShadow = true; } });
+          m.traverse(function (o) { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
           holder.add(m);
           var lights = [];
           ['luz_aviso_1', 'luz_aviso_2', 'luz_aviso_3'].forEach(function (nm) {
@@ -625,8 +1311,9 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     // --- Pallets reales ---
     PALLET_POS.forEach(function (pp, idx) {
       loadGLB(GLB_PALLET, function (gltf) {
+        pp = PALLET_POS[idx] || pp; // por si el mapa cambió mientras cargaba
         var m = gltf.scene;
-        m.traverse(function (o) { if (o.isMesh) { o.castShadow = false; o.receiveShadow = true; } });
+        m.traverse(function (o) { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
         var holder = new THREE.Group();
         holder.position.set(pp[0], 0, pp[1]);
         holder.rotation.y = pp[2];
@@ -654,7 +1341,244 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
       if (l) doorLeaves.push({ mesh: l, home: l.rotation.y, dir: 1 });
       if (r) doorLeaves.push({ mesh: r, home: r.rotation.y, dir: -1 });
     });
+    claroDoorLeaves = doorLeaves.slice();
     buildTVs();
+    // Si en el menú ya se eligió otro mapa antes de que el claro
+    // terminara de cargar, se aplica ahora que el mundo existe
+    if (currentMap !== 'claro') applyMap(currentMap);
+  }
+
+  /* ================= MUNDOS PROCEDURALES: LA MANSIÓN Y EL HOSPITAL =================
+     Sin .glb nuevo: suelo, muros con franja, mobiliario temático y las
+     puertas de salida se dibujan con geometría simple, cada cosa sobre
+     la colisión que MAP_DEFS declara para ella. Las puertas se
+     registran en doorLeaves igual que las del claro, así que abrirlas
+     al completar las tareas y el sabotaje que las cierra funcionan
+     sin tocar su código. */
+  function procBox(parent, w, h, d, color, x, y, z) {
+    var m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d),
+      new THREE.MeshStandardMaterial({ color: color, roughness: 0.95, bumpMap: texDetail(), bumpScale: 0.025 }));
+    m.position.set(x, y, z);
+    m.castShadow = true;
+    m.receiveShadow = true;
+    parent.add(m);
+    return m;
+  }
+  function buildPropVisual(p, def) {
+    var g = new THREE.Group();
+    var cx = p.obb ? p.obb[0] : p.circle[0], cz = p.obb ? p.obb[1] : p.circle[1];
+    g.position.set(cx * MS, 0, cz * MS);
+    if (p.obb) g.rotation.y = p.obb[2];
+    var hx = (p.obb ? p.obb[3] : p.circle[2]) * MS, hz = (p.obb ? p.obb[4] : p.circle[2]) * MS;
+    if (p.kind === 'shelf') { // librería de la biblioteca
+      procBox(g, hx * 2, 2.3, hz * 2, 0x3a281a, 0, 1.15, 0);
+      for (var i = 0; i < 3; i++) procBox(g, hx * 2 * 0.92, 0.07, hz * 2 + 0.06, 0x6b4a2f, 0, 0.6 + i * 0.65, 0);
+    } else if (p.kind === 'dining') { // mesa del comedor
+      procBox(g, hx * 2, 0.14, hz * 2, 0x54382a, 0, 0.78, 0);
+      procBox(g, hx * 1.7, 0.72, hz * 1.5, 0x3a281a, 0, 0.38, 0);
+    } else if (p.kind === 'sofa') {
+      procBox(g, hx * 2, 0.55, hz * 2, 0x4a2430, 0, 0.3, 0);
+      procBox(g, hx * 2, 0.85, 0.28, 0x3c1c26, 0, 0.62, -hz + 0.14);
+    } else if (p.kind === 'desk' || p.kind === 'recept') { // escritorio / recepción
+      procBox(g, hx * 2, 0.85, hz * 2, p.kind === 'desk' ? 0x3a281a : 0x4c5a55, 0, 0.43, 0);
+      procBox(g, hx * 2 + 0.15, 0.08, hz * 2 + 0.15, p.kind === 'desk' ? 0x54382a : 0x6b7d76, 0, 0.9, 0);
+    } else if (p.kind === 'stairs') { // escalera central de la mansión
+      procBox(g, hx * 2, 0.5, hz * 2, 0x3a3f47, 0, 0.25, 0);
+      for (var s2 = 0; s2 < 4; s2++) procBox(g, hx * 2 - s2 * 0.35, 0.32, hz * 1.2, 0x454b55, 0, 0.66 + s2 * 0.32, -hz * 0.3 + s2 * 0.18);
+    } else if (p.kind === 'statue') { // estatua de la familia
+      var ped = new THREE.Mesh(new THREE.CylinderGeometry(hx * 0.8, hx * 0.95, 0.9, 10),
+        new THREE.MeshStandardMaterial({ color: 0x3a3f47, roughness: 1 }));
+      ped.position.y = 0.45; g.add(ped);
+      var figMat = new THREE.MeshStandardMaterial({ color: 0x2c3038, roughness: 0.9 });
+      var fig = new THREE.Mesh(new THREE.CylinderGeometry(hx * 0.34, hx * 0.55, 1.15, 8), figMat);
+      fig.position.y = 1.45; g.add(fig);
+      var head = new THREE.Mesh(new THREE.SphereGeometry(hx * 0.34, 10, 8), figMat);
+      head.position.y = 2.2; g.add(head);
+    } else if (p.kind === 'plant') { // planta muerta
+      var pot = new THREE.Mesh(new THREE.CylinderGeometry(hx * 0.55, hx * 0.42, 0.55, 8),
+        new THREE.MeshStandardMaterial({ color: 0x54382a, roughness: 1 }));
+      pot.position.y = 0.27; g.add(pot);
+      var fol = new THREE.Mesh(new THREE.SphereGeometry(hx * 0.95, 8, 6),
+        new THREE.MeshStandardMaterial({ color: 0x14251a, roughness: 1 }));
+      fol.position.y = 1.0; fol.scale.y = 1.25; g.add(fol);
+    } else if (p.kind === 'bed') { // cama de hospital
+      procBox(g, hx * 2, 0.3, hz * 2, 0x39423e, 0, 0.35, 0);
+      procBox(g, hx * 2 * 0.94, 0.18, hz * 2 * 0.92, 0x9aa39c, 0, 0.58, 0);
+      procBox(g, hx * 0.5, 0.14, hz * 1.2, 0xd8d8d2, -hx * 0.62, 0.7, 0);
+      procBox(g, 0.12, 0.85, hz * 2, 0x39423e, -hx + 0.06, 0.43, 0);
+    } else if (p.kind === 'cabinet') { // vitrina / armario de material
+      procBox(g, hx * 2, 1.5, hz * 2, 0x8b948e, 0, 1.15, 0);
+      procBox(g, hx * 2 * 0.9, 0.06, hz * 2 + 0.05, 0x5f6a64, 0, 0.75, 0);
+      procBox(g, hx * 2 * 0.9, 0.06, hz * 2 + 0.05, 0x5f6a64, 0, 1.5, 0);
+    } else if (p.kind === 'tank') { // tanque de oxígeno
+      var tkMat = new THREE.MeshStandardMaterial({ color: 0x5f7d84, roughness: 0.5, metalness: 0.5 });
+      var tk = new THREE.Mesh(new THREE.CylinderGeometry(hx * 0.55, hx * 0.55, 1.25, 10), tkMat);
+      tk.position.y = 0.63; g.add(tk);
+      var tp2 = new THREE.Mesh(new THREE.SphereGeometry(hx * 0.3, 8, 8), tkMat);
+      tp2.position.y = 1.35; g.add(tp2);
+    } else if (p.kind === 'wheel') { // silla de ruedas
+      procBox(g, 0.55, 0.08, 0.5, 0x1c1f26, 0, 0.55, 0);
+      procBox(g, 0.55, 0.6, 0.08, 0x1c1f26, 0, 0.95, -0.24);
+      [-0.3, 0.3].forEach(function (wx) {
+        var wh = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.035, 6, 14),
+          new THREE.MeshStandardMaterial({ color: 0x22262e, roughness: 0.7 }));
+        wh.position.set(wx, 0.3, 0); wh.rotation.y = Math.PI / 2; g.add(wh);
+      });
+    }
+    procGroup.add(g);
+  }
+  function buildProcMap() {
+    if (procGroup) { scene.remove(procGroup); procGroup = null; }
+    procDoorLeaves = [];
+    procLights = [];
+    if (currentMap === 'claro') {
+      if (claroDoorLeaves) doorLeaves = claroDoorLeaves.slice();
+      return;
+    }
+    var def = MAP_DEFS[currentMap];
+    procGroup = new THREE.Group();
+    // Suelo con textura y relieve: tablones en la mansión, baldosas en
+    // el hospital; un poco de brillo para que las luces se reflejen
+    var floorTex = currentMap === 'mansion' ? texWood() : texTile();
+    floorTex.repeat.set(currentMap === 'mansion' ? 9 : 13, currentMap === 'mansion' ? 9 : 13);
+    var floor = new THREE.Mesh(new THREE.PlaneGeometry(58, 58),
+      new THREE.MeshStandardMaterial({ color: def.floor, map: floorTex, bumpMap: floorTex, bumpScale: 0.2, roughness: 0.55, metalness: 0.07 }));
+    floor.rotation.x = -Math.PI / 2; floor.position.y = -0.02;
+    floor.receiveShadow = true;
+    procGroup.add(floor);
+    if (currentMap === 'hospital') { // charcos de las goteras del pasillo
+      addPuddle(procGroup, -6 * MS, 0.015, -1.1 * MS, 1.5, 0.65);
+      addPuddle(procGroup, 3 * MS, 0.015, 1.3 * MS, 1.2, 0.7);
+      addPuddle(procGroup, 9.5 * MS, 0.015, -1.2 * MS, 1.7, 0.6);
+    }
+    // Muros interiores con su franja de color
+    def.walls.forEach(function (w) {
+      var g = new THREE.Group();
+      g.position.set(w[0] * MS, 0, w[1] * MS);
+      g.rotation.y = w[2];
+      procBox(g, w[3] * MS, 3.4, 0.44, def.wall, 0, 1.7, 0);
+      procBox(g, w[3] * MS, 0.5, 0.5, def.trim, 0, 0.95, 0);
+      procBox(g, w[3] * MS, 0.18, 0.52, def.trim, 0, 3.42, 0);
+      procGroup.add(g);
+    });
+    // Perímetro: un muro continuo cierra la planta
+    [[0, -18.3, 0, 37], [0, 18.3, 0, 37], [-18.3, 0, Math.PI / 2, 37], [18.3, 0, Math.PI / 2, 37]].forEach(function (w) {
+      var g = new THREE.Group();
+      g.position.set(w[0] * MS, 0, w[1] * MS);
+      g.rotation.y = w[2];
+      procBox(g, w[3] * MS, 2.4, 0.5, def.wall, 0, 1.2, 0);
+      procGroup.add(g);
+    });
+    // Mobiliario y decoración del lugar
+    def.props.forEach(function (p) { buildPropVisual(p, def); });
+    // Luces de ambiente colgantes, distintas en cada mapa
+    if (currentMap === 'mansion') {
+      [[-6, 0], [6, 0]].forEach(function (cp) { // candelabros del salón
+        var cg = new THREE.Group();
+        cg.position.set(cp[0] * MS, 0, cp[1] * MS);
+        var ring = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.05, 6, 16),
+          new THREE.MeshStandardMaterial({ color: 0x6b4a2f, roughness: 0.8 }));
+        ring.rotation.x = Math.PI / 2; ring.position.y = 2.9; cg.add(ring);
+        var cl = new THREE.PointLight(0xff9a3c, 7, 10, 1.8);
+        cl.position.y = 2.7; cg.add(cl);
+        procGroup.add(cg);
+      });
+    } else if (currentMap === 'hospital') {
+      [[-8, 0], [0, 0], [8, 0]].forEach(function (cp) { // fluorescentes del pasillo
+        var tg = new THREE.Group();
+        tg.position.set(cp[0] * MS, 0, cp[1] * MS);
+        procBox(tg, 2.2, 0.08, 0.3, 0xbfe8da, 0, 3.1, 0);
+        var tl = new THREE.PointLight(0x9fd8c8, 4, 9, 1.8);
+        tl.position.y = 2.9; tg.add(tl);
+        procGroup.add(tg);
+      });
+    }
+    // Puertas de salida (oeste y este): marco y dos hojas con bisagra
+    [-1, 1].forEach(function (side) {
+      var dx = side * 17.6 * MS;
+      var frame = new THREE.Group();
+      frame.position.set(dx, 0, 0);
+      procBox(frame, 0.5, 3.1, 0.5, def.trim, 0, 1.55, -1.55);
+      procBox(frame, 0.5, 3.1, 0.5, def.trim, 0, 1.55, 1.55);
+      procBox(frame, 0.5, 0.5, 3.6, def.trim, 0, 3.1, 0);
+      procGroup.add(frame);
+      [[-1.3, 1], [1.3, -1]].forEach(function (lf) {
+        var hinge = new THREE.Group();
+        hinge.position.set(dx, 0, lf[0]);
+        procBox(hinge, 0.14, 2.7, 1.3, def.door, 0, 1.35, lf[0] < 0 ? 0.65 : -0.65);
+        procGroup.add(hinge);
+        procDoorLeaves.push({ mesh: hinge, home: 0, dir: lf[1] });
+      });
+    });
+    doorLeaves = procDoorLeaves.slice();
+    procGroup.visible = false; // el menú no lo muestra; startGame lo enciende
+    // Luces colgantes del lugar, para darles vida en updateAtmosphere
+    procGroup.traverse(function (o) {
+      if (o.isPointLight) procLights.push({ l: o, base: o.intensity, warm: o.color.getHex() === 0xff9a3c });
+    });
+    scene.add(procGroup);
+  }
+
+  /* Aplica el mapa elegido: datos, textos del menú, ambiente de la
+     escena y reconstrucción del mundo (tareas, televisiones, pallets,
+     colisiones y navegación). El claro queda tal y como estaba. */
+  function applyMap(id) {
+    if (!MAP_DEFS[id]) id = 'claro';
+    setMapData(id);
+    var def = MAP_DEFS[id];
+    var btns = document.querySelectorAll('.mapBtn');
+    for (var b = 0; b < btns.length; b++) btns[b].classList.toggle('sel', btns[b].getAttribute('data-map') === id);
+    $('menuSub').textContent = def.name + ' · sobrevive… o sé la impostora';
+    $('menuDesc').innerHTML = def.desc;
+    $('mapNote').textContent = def.note;
+    var th = $('taskHeadEl'); if (th) th.textContent = def.taskHead;
+    document.title = 'Pesadilla Retro 3D — ' + def.name;
+    if (!scene) return; // antes del arranque solo cambian datos y textos
+    // Ambiente del lugar: niebla, fondo y luces generales
+    scene.background.setHex(AMBIENT.bg);
+    scene.fog.color.setHex(AMBIENT.fog);
+    scene.fog.density = AMBIENT.fogDensity;
+    if (ambLight) { ambLight.color.setHex(AMBIENT.ambColor); ambLight.intensity = AMBIENT.ambInt; }
+    if (moonLight) { moonLight.color.setHex(AMBIENT.moonColor); moonLight.intensity = AMBIENT.moonInt; }
+    applyGrade(id); // tinte de color, exposición y cielo propios del mapa
+    if (mapGroup) mapGroup.visible = false;
+    buildProcMap();
+    // Rincones de tarea del mapa (buildTasks lee TASK_SPOTS)
+    tasks.forEach(function (t) { if (t) scene.remove(t.group); });
+    tasks.length = 0;
+    buildTasks();
+    // Televisiones del mapa (buildTVs lee TV_POS)
+    tvScreens.forEach(function (t) { if (t.group) scene.remove(t.group); });
+    tvScreens.length = 0;
+    buildTVs();
+    // Pallets a las posiciones del mapa, todos de pie
+    pallets.forEach(function (p, idx) {
+      var pp = PALLET_POS[idx];
+      if (!p || !pp) return;
+      p.group.position.set(pp[0], 0, pp[1]);
+      p.group.rotation.y = pp[2];
+      p.x = pp[0]; p.z = pp[1]; p.rot = pp[2]; p.fallSign = pp[4];
+      p.state = 'standing'; p.anim = 0;
+      p.pivot.rotation.x = -Math.PI / 2;
+      p.group.visible = false;
+      if (p.obbRef) { var oi = OBBS.indexOf(p.obbRef); if (oi >= 0) OBBS.splice(oi, 1); p.obbRef = null; }
+    });
+    // Los motores decorativos solo existen en el claro
+    gens.forEach(function (g) { if (g) g.group.visible = false; });
+    // Colisiones y navegación del mapa elegido
+    OBBS.length = 0;
+    rebuildColliders();
+    buildNavGrid();
+    updateTasks();
+  }
+  function setMap(id) {
+    applyMap(id);
+    // En línea, el mapa de la sala es el del anfitrión: si eres tú y la
+    // sala aún no empieza, se avisa a los invitados por el vestíbulo
+    if (mp.isHost && mp.peer && !mp.started) {
+      mp.map = currentMap;
+      if (!$('mpPanel').classList.contains('hidden')) mpBroadcastLobby();
+    }
   }
 
   /* ================= RINCONES DE TAREA =================
@@ -665,9 +1589,12 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
      luminoso en el suelo (ámbar = pendiente, verde = hecho) y una lucecita
      para encontrarlo entre la niebla. */
   function buildTasks() {
-    var woodMat = new THREE.MeshStandardMaterial({ color: 0x4a3421, roughness: 0.95 });
-    var stoneMat = new THREE.MeshStandardMaterial({ color: 0x3a3f47, roughness: 1 });
-    var darkMat = new THREE.MeshStandardMaterial({ color: 0x14161c, roughness: 0.9 });
+    // Idempotente: si ya había rincones (otro mapa), se retiran primero
+    tasks.forEach(function (t) { if (t && t.group) scene.remove(t.group); });
+    tasks.length = 0;
+    var woodMat = new THREE.MeshStandardMaterial({ color: 0x4a3421, roughness: 0.95, bumpMap: texDetail(), bumpScale: 0.03 });
+    var stoneMat = new THREE.MeshStandardMaterial({ color: 0x3a3f47, roughness: 1, bumpMap: texDetail(), bumpScale: 0.05 });
+    var darkMat = new THREE.MeshStandardMaterial({ color: 0x14161c, roughness: 0.55, metalness: 0.35, bumpMap: texDetail(), bumpScale: 0.02 });
     TASK_SPOTS.forEach(function (ts, idx) {
       var grp = new THREE.Group();
       grp.position.set(ts[0], 0, ts[1]);
@@ -727,7 +1654,135 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
           ph.rotation.z = (fi % 2 ? -1 : 1) * 0.06;
           grp.add(ph);
         }
+      } else if (ts[3] === 'candelabros') {
+        // Candelabro de pie del comedor: barra alta con 3 velas
+        var cpol = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.09, 1.3, 8), darkMat);
+        cpol.position.y = 0.65; grp.add(cpol);
+        var cbar = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.05, 0.05), darkMat);
+        cbar.position.y = 1.28; grp.add(cbar);
+        [-0.36, 0, 0.36].forEach(function (cx, ci) {
+          var cc2 = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.045, 0.2 + ci * 0.04, 8),
+            new THREE.MeshStandardMaterial({ color: 0xe8e0cc, roughness: 0.7 }));
+          cc2.position.set(cx, 1.4 + ci * 0.02, 0); grp.add(cc2);
+          var cf2 = new THREE.Mesh(new THREE.SphereGeometry(0.032, 8, 8),
+            new THREE.MeshBasicMaterial({ color: 0xffc966 }));
+          cf2.position.set(cx, 1.56 + ci * 0.04, 0); grp.add(cf2);
+        });
+      } else if (ts[3] === 'piano') {
+        // Piano de cola de la sala de música, con su tapa abierta
+        var pbody = new THREE.Mesh(new THREE.BoxGeometry(1.45, 0.5, 0.62),
+          new THREE.MeshStandardMaterial({ color: 0x14100d, roughness: 0.35 }));
+        pbody.position.y = 0.62; grp.add(pbody);
+        var plid = new THREE.Mesh(new THREE.BoxGeometry(1.45, 0.05, 0.62), pbody.material);
+        plid.position.set(0, 1.12, -0.18); plid.rotation.x = -0.55; grp.add(plid);
+        var keys2 = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.04, 0.17),
+          new THREE.MeshStandardMaterial({ color: 0xe8e6df, roughness: 0.5 }));
+        keys2.position.set(0, 0.82, 0.38); grp.add(keys2);
+        [[-0.62, -0.22], [0.62, -0.22], [-0.62, 0.22], [0.62, 0.22]].forEach(function (lp3) {
+          var pleg = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.4, 0.07), pbody.material);
+          pleg.position.set(lp3[0], 0.2, lp3[1]); grp.add(pleg);
+        });
+      } else if (ts[3] === 'reloj') {
+        // Reloj de pie del salón, parado a la hora de su muerte
+        var rbody = new THREE.Mesh(new THREE.BoxGeometry(0.62, 1.95, 0.4), woodMat);
+        rbody.position.y = 0.98; grp.add(rbody);
+        var rface = new THREE.Mesh(new THREE.CircleGeometry(0.21, 20),
+          new THREE.MeshBasicMaterial({ color: 0xe8e0cc }));
+        rface.position.set(0, 1.62, 0.21); grp.add(rface);
+        var rpend = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8),
+          new THREE.MeshStandardMaterial({ color: 0xc9a227, roughness: 0.4, metalness: 0.6 }));
+        rpend.position.set(0, 0.75, 0.21); grp.add(rpend);
+      } else if (ts[3] === 'retrato') {
+        // El retrato de ELLA, con marco dorado, sobre dos postes
+        [[-0.45, 0], [0.45, 0]].forEach(function (lp4) {
+          var rpost = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.0, 0.08), woodMat);
+          rpost.position.set(lp4[0], 0.5, -0.05); grp.add(rpost);
+        });
+        var rframe = new THREE.Mesh(new THREE.BoxGeometry(0.98, 1.24, 0.06),
+          new THREE.MeshStandardMaterial({ color: 0x8a6d2f, roughness: 0.5, metalness: 0.4 }));
+        rframe.position.y = 1.3; grp.add(rframe);
+        var rport = new THREE.Mesh(new THREE.PlaneGeometry(0.78, 1.04),
+          new THREE.MeshStandardMaterial({ color: 0x4a1620, roughness: 0.85 }));
+        rport.position.set(0, 1.3, 0.04); grp.add(rport);
+        var rface2 = new THREE.Mesh(new THREE.CircleGeometry(0.16, 14),
+          new THREE.MeshStandardMaterial({ color: 0xcfc8bb, roughness: 0.9 }));
+        rface2.position.set(0, 1.48, 0.05); grp.add(rface2);
+      } else if (ts[3] === 'caja') {
+        // Caja fuerte familiar sobre su plinto de piedra
+        var cplinth = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.2, 0.95), stoneMat);
+        cplinth.position.y = 0.1; grp.add(cplinth);
+        var cbox = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.74, 0.74),
+          new THREE.MeshStandardMaterial({ color: 0x23262c, roughness: 0.45, metalness: 0.55 }));
+        cbox.position.y = 0.57; grp.add(cbox);
+        var cdial = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.05, 14),
+          new THREE.MeshStandardMaterial({ color: 0xc9a227, roughness: 0.35, metalness: 0.7 }));
+        cdial.rotation.x = Math.PI / 2; cdial.position.set(-0.16, 0.68, 0.39); grp.add(cdial);
+        var chand = new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.02, 6, 14),
+          cdial.material);
+        chand.position.set(0.17, 0.5, 0.39); grp.add(chand);
+      } else if (ts[3] === 'expedientes') {
+        // Mesa del archivo con los expedientes tirados encima
+        var etab = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.08, 0.6), woodMat);
+        etab.position.y = 0.72; grp.add(etab);
+        [[-0.5, -0.22], [0.5, -0.22], [-0.5, 0.22], [0.5, 0.22]].forEach(function (lp5) {
+          var eleg = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.72, 0.07), woodMat);
+          eleg.position.set(lp5[0], 0.36, lp5[1]); grp.add(eleg);
+        });
+        for (var ei = 0; ei < 4; ei++) {
+          var pap = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.025 + ei * 0.008, 0.42),
+            new THREE.MeshStandardMaterial({ color: ei % 2 ? 0xcfc9b8 : 0xe3ddcb, roughness: 0.9 }));
+          pap.position.set(-0.3 + (ei % 2) * 0.55, 0.79 + ei * 0.012, (ei % 3 - 1) * 0.08);
+          pap.rotation.y = (ei % 2 ? -1 : 1) * 0.25;
+          grp.add(pap);
+        }
+      } else if (ts[3] === 'lampara') {
+        // Lámpara de quirófano: mástil, brazo y cabezal de focos
+        var lpol = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.07, 1.7, 8), darkMat);
+        lpol.position.set(0, 0.85, -0.25); grp.add(lpol);
+        var larm = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.55), darkMat);
+        larm.position.set(0, 1.68, 0); grp.add(larm);
+        var lhead = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.42, 0.13, 16),
+          new THREE.MeshStandardMaterial({ color: 0xdadada, roughness: 0.4, emissive: 0xfff2cc, emissiveIntensity: 0.55 }));
+        lhead.position.set(0, 1.5, 0.28); lhead.rotation.x = 0.7; grp.add(lhead);
+      } else if (ts[3] === 'llave') {
+        // Botiquín de pared de la farmacia, con su cruz
+        var bbot = new THREE.Mesh(new THREE.BoxGeometry(0.92, 1.25, 0.38),
+          new THREE.MeshStandardMaterial({ color: 0xb9beb9, roughness: 0.6 }));
+        bbot.position.y = 1.15; grp.add(bbot);
+        var bcrossMat = new THREE.MeshStandardMaterial({ color: 0xa31621, roughness: 0.6 });
+        var bc1 = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.1, 0.03), bcrossMat);
+        bc1.position.set(0, 1.32, 0.21); grp.add(bc1);
+        var bc2 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.34, 0.03), bcrossMat);
+        bc2.position.set(0, 1.32, 0.21); grp.add(bc2);
+        [[-0.32, 0], [0.32, 0]].forEach(function (lp6) {
+          var bleg = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.55, 0.07), darkMat);
+          bleg.position.set(lp6[0], 0.27, 0); grp.add(bleg);
+        });
+      } else if (ts[3] === 'rayosx') {
+        // Panel de rayos X con la placa iluminada
+        var xpan = new THREE.Mesh(new THREE.BoxGeometry(0.95, 1.75, 0.24), darkMat);
+        xpan.position.y = 0.95; grp.add(xpan);
+        var xscr = new THREE.Mesh(new THREE.PlaneGeometry(0.72, 1.15),
+          new THREE.MeshBasicMaterial({ color: 0xaec6d8 }));
+        xscr.position.set(0, 1.05, 0.13); grp.add(xscr);
+        for (var xi = 0; xi < 3; xi++) {
+          var rib = new THREE.Mesh(new THREE.BoxGeometry(0.44 - xi * 0.07, 0.035, 0.01),
+            new THREE.MeshBasicMaterial({ color: 0x5a707e }));
+          rib.position.set(0, 1.28 - xi * 0.22, 0.14); grp.add(rib);
+        }
+      } else if (ts[3] === 'suero') {
+        // Portasueros de la sala de curas, con su bolsa
+        var spol = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 1.75, 8), darkMat);
+        spol.position.y = 0.88; grp.add(spol);
+        var sbag = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.27, 0.05),
+          new THREE.MeshStandardMaterial({ color: 0xd8e2da, roughness: 0.35 }));
+        sbag.position.set(0.14, 1.5, 0); grp.add(sbag);
+        var stube = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.6, 6), darkMat);
+        stube.position.set(0.14, 1.05, 0); grp.add(stube);
+        var sbase = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.26, 0.05, 10), darkMat);
+        sbase.position.y = 0.03; grp.add(sbase);
       }
+      grp.traverse(function (o) { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
       scene.add(grp);
       tasks[idx] = { group: grp, x: ts[0], z: ts[1], rot: ts[2], done: false, miniType: ts[3], place: ts[4], ringMat: ringMat, light: light };
       obb(ts[0], ts[1], ts[2], 0.6, 0.45);
@@ -740,6 +1795,9 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
      Son geometría simple nueva: ningún modelo existente se toca. */
   var tvScreens = [];
   function buildTVs() {
+    // Idempotente: si ya había televisiones (otro mapa), se retiran primero
+    tvScreens.forEach(function (t) { if (t.group) scene.remove(t.group); });
+    tvScreens.length = 0;
     TV_POS.forEach(function (tp, i) {
       var grp = new THREE.Group();
       grp.position.set(tp[0], 0, tp[1]);
@@ -764,8 +1822,9 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
         ant.rotation.z = rz;
         grp.add(ant);
       });
+      grp.traverse(function (o) { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
       scene.add(grp);
-      tvScreens.push({ mat: scrMat, x: tp[0], z: tp[1], flash: 0 });
+      tvScreens.push({ mat: scrMat, x: tp[0], z: tp[1], flash: 0, group: grp });
     });
   }
   function tvFlash(i) { if (tvScreens[i]) tvScreens[i].flash = 1; }
@@ -993,6 +2052,79 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
   }
   function dist2(ax, az, bx, bz) { return Math.hypot(ax - bx, az - bz); }
 
+  /* ================= PANTALLA COMPLETA =================
+     Botón en el menú y en la pausa, botón táctil durante la partida y
+     tecla F (en el modo Asesino la F ataca: ahí manda el botón).
+     Entrar/salir de pantalla completa suelta el pointer lock: si el
+     cambio lo pidió el jugador (botón o F), el candado se recupera solo
+     tras el cambio y la partida NO se pausa; si el navegador salió por
+     su tecla Esc, manda el flujo normal y la partida se pausa. */
+  var fsRootEl = $('app');
+  var fsSupported = !!(fsRootEl && (fsRootEl.requestFullscreen || fsRootEl.webkitRequestFullscreen));
+  var fsToggleAt = 0;   // cuándo pidió el jugador el último cambio de FS
+  var fsGuardUntil = 0; // hasta cuándo perder el pointer lock no pausa
+  var FS_SVG_IN = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>';
+  var FS_SVG_OUT = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3v6H3M15 3v6h6M9 21v-6H3M15 21v-6h6"/></svg>';
+  function fsActive() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+  function updateFSButtons() {
+    var btns = [$('btnFSMenu'), $('btnFSPause'), $('btnFSTouch')];
+    btns.forEach(function (b) { if (b) b.classList.toggle('hidden', !fsSupported); });
+    if (!fsSupported) return;
+    var fs = fsActive();
+    var label = fs ? 'SALIR DE PANTALLA COMPLETA' : 'PANTALLA COMPLETA';
+    var ico = fs ? FS_SVG_OUT : FS_SVG_IN;
+    var m = $('btnFSMenu'), p = $('btnFSPause'), t = $('btnFSTouch');
+    if (m) m.innerHTML = ico + '<span>' + label + '</span>';
+    if (p) p.innerHTML = ico + '<span>' + label + '</span>';
+    if (t) { t.innerHTML = ico; t.setAttribute('aria-label', label); }
+  }
+  function fsRequestOn(el) {
+    var req = el && (el.requestFullscreen || el.webkitRequestFullscreen);
+    if (!req) return null;
+    try { return req.call(el); } catch (e) { return null; }
+  }
+  function toggleFullscreen() {
+    if (!fsSupported) return;
+    fsToggleAt = Date.now();
+    fsGuardUntil = Date.now() + 2000;
+    if (fsActive()) {
+      var exitFn = document.exitFullscreen || document.webkitExitFullscreen;
+      if (exitFn) exitFn.call(document);
+      return;
+    }
+    var pr = fsRequestOn(fsRootEl);
+    if (pr && pr.catch) pr.catch(function () {
+      // El contenedor no pudo entrar: probar con el documento entero;
+      // si tampoco se puede, los botones sobran y se ocultan.
+      var pr2 = fsRequestOn(document.documentElement);
+      if (pr2 && pr2.catch) pr2.catch(function () { fsSupported = false; updateFSButtons(); });
+      else if (!pr2) { fsSupported = false; updateFSButtons(); }
+    });
+  }
+  function fsRelock() {
+    if (isTouch || !canvas.requestPointerLock) return;
+    try { var pr = canvas.requestPointerLock(); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {}
+  }
+  function onFSChange() {
+    updateFSButtons();
+    resize();
+    // Solo se recupera el candado si el cambio lo pidió el jugador.
+    if (Date.now() - fsToggleAt > 1200) return;
+    if (S.screen !== 'playing' || isTouch || miniOpen) return;
+    fsGuardUntil = Date.now() + 2000;
+    [300, 800, 1400].forEach(function (ms) {
+      setTimeout(function () {
+        if (S.screen === 'playing' && !miniOpen && document.pointerLockElement !== canvas) fsRelock();
+      }, ms);
+    });
+    // Si el candado no volvió, mejor pausar que jugar sin ratón.
+    setTimeout(function () {
+      if (S.screen === 'playing' && !miniOpen && !isTouch && document.pointerLockElement !== canvas) pauseGame();
+    }, 1900);
+  }
+  document.addEventListener('fullscreenchange', onFSChange);
+  document.addEventListener('webkitfullscreenchange', onFSChange);
+
   /* ================= ENTRADA ================= */
   var keys = {};
   var joy = { x: 0, y: 0, active: false, id: null };
@@ -1005,6 +2137,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
       if (e.code === 'KeyE') tryInteract();
       if ((e.code === 'KeyF' || e.code === 'Space') && S.role === 'killer') killerAttack();
     }
+    if (e.code === 'KeyF' && !(S.screen === 'playing' && S.role === 'killer')) toggleFullscreen();
     if (e.code === 'Escape' && miniOpen) { closeMini(false); return; }
     if (e.code === 'Escape' && S.screen === 'playing') pauseGame();
     if (e.code === 'KeyP' && S.screen === 'playing') pauseGame();
@@ -1027,6 +2160,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
   });
   document.addEventListener('pointerlockchange', function () {
     if (S.screen === 'playing' && !isTouch && !miniOpen && document.pointerLockElement !== canvas) {
+      if (Date.now() < fsGuardUntil) return; // lo soltó el cambio de pantalla completa: se recupera solo
       pauseGame();
     }
   });
@@ -1102,7 +2236,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     if (!html) { p.classList.add('hidden'); p.innerHTML = ''; return; }
     p.innerHTML = html; p.classList.remove('hidden');
   }
-  var MINI_NAMES = { vela: 'Encender la vela ritual', cinta: 'Rebobinar la cinta maldita', simbolos: 'Repetir el sello de sal', fotos: 'Arrancar las fotos malditas' };
+  var MINI_NAMES = { vela: 'Encender la vela ritual', cinta: 'Rebobinar la cinta maldita', simbolos: 'Repetir el sello de sal', fotos: 'Arrancar las fotos malditas', candelabros: 'Encender los candelabros', piano: 'Tocar el piano', reloj: 'Dar cuerda al reloj', retrato: 'Encontrar el retrato', caja: 'Abrir la caja fuerte', expedientes: 'Recoger los expedientes', lampara: 'Encender la lámpara del quirófano', llave: 'Encontrar la llave del botiquín', rayosx: 'Activar los rayos X', suero: 'Preparar el suero' };
   function updateTasks() {
     var ul = $('taskItems');
     if (ul) {
@@ -1120,7 +2254,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     $('preyBarFill').style.width = Math.round(S.tasksDone / 5 * 100) + '%';
     $('preyCount').textContent = S.tasksDone + '/5';
     var ki = $('kInfoTasks'); if (ki) ki.textContent = S.tasksDone + '/5';
-    var kh = $('kInfoHits'); if (kh) kh.textContent = prey.health + '/2';
+    var kh = $('kInfoHits'); if (kh) kh.textContent = (mp.active && S.role === 'killer') ? (mpCaughtCount() + '/' + mpSurvCount()) : (prey.health + '/2');
   }
   function updateStatus() {
     var c = $('statusChip');
@@ -1134,7 +2268,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
      No hay reparación de motores: completar el minijuego completa la tarea.
      Mientras el panel está abierto el jugador no se mueve, pero la
      impostora sigue suelta acechando. */
-  var miniOpen = false, miniGen = -1, miniVela = null, miniCinta = null, miniSimbolos = null;
+  var miniOpen = false, miniGen = -1, miniVela = null, miniCinta = null, miniSimbolos = null, miniReloj = null, miniCaja = null;
   function openMini(idx) {
     var g = tasks[idx];
     if (!g || g.done || miniOpen || S.screen !== 'playing' || S.role !== 'surv') return;
@@ -1150,7 +2284,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
   function closeMini(done) {
     if (!miniOpen) return;
     miniOpen = false;
-    miniVela = null; miniCinta = null; miniSimbolos = null;
+    miniVela = null; miniCinta = null; miniSimbolos = null; miniReloj = null; miniCaja = null;
     $('miniPanel').classList.add('hidden');
     $('miniBody').innerHTML = '';
     var idx = miniGen; miniGen = -1;
@@ -1162,17 +2296,32 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     }
   }
   function buildMini(type) {
+    // Cada mapa trae sus tareas, pero comparten motores de minijuego:
+    // el de la chispa (vela/candelabros/lámpara), el de mantener y
+    // soltar (cinta/suero), el de repetir la secuencia (sello/piano/
+    // rayos X), el de recoger la parrilla (fotos/expedientes), el de
+    // buscar el bueno (retrato/llave) y dos propios de la mansión
+    // (dar cuerda al reloj y la combinación de la caja fuerte)
     var body = $('miniBody');
     body.innerHTML = '';
-    if (type === 'vela') buildVela(body);
-    else if (type === 'cinta') buildCinta(body);
-    else if (type === 'simbolos') buildSimbolos(body);
-    else buildFotos(body);
+    if (type === 'vela' || type === 'candelabros' || type === 'lampara') buildVela(body, type);
+    else if (type === 'cinta' || type === 'suero') buildCinta(body, type);
+    else if (type === 'simbolos' || type === 'piano' || type === 'rayosx') buildSimbolos(body, type);
+    else if (type === 'fotos' || type === 'expedientes') buildFotos(body, type);
+    else if (type === 'retrato' || type === 'llave') buildBuscar(body, type);
+    else if (type === 'reloj') buildReloj(body);
+    else if (type === 'caja') buildCaja(body);
+    else buildFotos(body, type);
   }
-  function buildVela(body) {
+  function buildVela(body, type) {
+    var FL = {
+      vela: { intro: 'La vela ritual es lo único que ella teme. Pulsa ENCENDER justo cuando la chispa pase por la zona dorada. Enciende las 3 llamas: cada una cuesta más que la anterior.', one: '¡Una llama! Faltan ', all: '¡La vela arde! Su luz la mantiene lejos de este rincón…', fail: 'La chispa se apagó en la niebla… inténtalo otra vez.' },
+      candelabros: { intro: 'Los candelabros de la mansión llevan décadas apagados. Pulsa ENCENDER justo cuando la chispa pase por la zona dorada. Enciende las 3 llamas: cada una cuesta más que la anterior.', one: '¡Una llama! Faltan ', all: '¡Los candelabros arden! El comedor respira un poco menos oscuro…', fail: 'La chispa se apagó entre el polvo… inténtalo otra vez.' },
+      lampara: { intro: 'La lámpara del quirófano parpadea desde hace años. Pulsa ENCENDER justo cuando el haz pase por la zona dorada. Enciende los 3 focos: cada uno cuesta más que el anterior.', one: '¡Un foco! Faltan ', all: '¡La lámpara quirúrgica ruge encendida! Este quirófano ya no es suyo…', fail: 'El haz se perdió en el parpadeo… inténtalo otra vez.' }
+    }[type] || { intro: '', one: '', all: '', fail: '' };
     var wrap = document.createElement('div');
     wrap.className = 'miniCenter';
-    wrap.innerHTML = '<div class="miniMsg">La vela ritual es lo único que ella teme. Pulsa ENCENDER justo cuando la chispa pase por la zona dorada. Enciende las 3 llamas: cada una cuesta más que la anterior.</div>' +
+    wrap.innerHTML = '<div class="miniMsg">' + FL.intro + '</div>' +
       '<div class="velaDots" id="velaDots">○ ○ ○</div>' +
       '<div class="velaTrack"><div class="velaZone" id="velaZone"></div><div class="velaMark" id="velaMark"></div></div>' +
       '<button class="miniBtn" id="velaBtn">ENCENDER</button>' +
@@ -1195,26 +2344,30 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
         var d = $('velaDots');
         if (d) d.textContent = ['○ ○ ○', '● ○ ○', '● ● ○', '● ● ●'][miniVela.hits];
         var m = $('velaMsg');
-        if (m) m.textContent = miniVela.hits >= 3 ? '¡La vela arde! Su luz la mantiene lejos de este rincón…' : '¡Una llama! Faltan ' + (3 - miniVela.hits) + '.';
+        if (m) m.textContent = miniVela.hits >= 3 ? FL.all : FL.one + (3 - miniVela.hits) + '.';
         drawZone();
         if (miniVela.hits >= 3) setTimeout(function () { closeMini(true); }, 450);
       } else {
         noiseBurst(0.18, 900, 0.2);
         var m2 = $('velaMsg');
-        if (m2) m2.textContent = 'La chispa se apagó en la niebla… inténtalo otra vez.';
+        if (m2) m2.textContent = FL.fail;
       }
     });
   }
-  function buildCinta(body) {
+  function buildCinta(body, type) {
+    var FL = {
+      cinta: { intro: 'La cinta maldita guarda lo que ella no quiere que veas. Mantén pulsado REBOBINAR para enrollarla… pero cuando salte la ESTÁTICA, suelta enseguida o la cinta se daña y retrocede.', btn: 'MANTÉN · REBOBINAR', warn: '⚠ ¡ESTÁTICA! ¡Suelta el botón!' },
+      suero: { intro: 'El suero tiene que quedar listo antes de que ella vuelva por el pasillo. Mantén pulsado LLENAR para preparar la bolsa… pero cuando SUBA LA PRESIÓN, suelta enseguida o el suero se echa a perder y retrocede.', btn: 'MANTÉN · LLENAR EL SUERO', warn: '⚠ ¡SUBE LA PRESIÓN! ¡Suelta el botón!' }
+    }[type] || { intro: '', btn: '', warn: '' };
     var wrap = document.createElement('div');
     wrap.className = 'miniCenter';
-    wrap.innerHTML = '<div class="miniMsg">La cinta maldita guarda lo que ella no quiere que veas. Mantén pulsado REBOBINAR para enrollarla… pero cuando salte la ESTÁTICA, suelta enseguida o la cinta se daña y retrocede.</div>' +
+    wrap.innerHTML = '<div class="miniMsg">' + FL.intro + '</div>' +
       '<div class="miniPct" id="cintaPct">0%</div>' +
       '<div class="bar" style="width:100%"><i id="cintaFill"></i></div>' +
-      '<button class="miniBtn holdBtn" id="cintaBtn">MANTÉN · REBOBINAR</button>' +
+      '<button class="miniBtn holdBtn" id="cintaBtn">' + FL.btn + '</button>' +
       '<div class="miniMsg" id="cintaMsg"></div>';
     body.appendChild(wrap);
-    miniCinta = { t: 0, dur: 4.5, hold: false, burst: false, nextBurst: 1.1 + Math.random() * 0.9, burstLeft: 0 };
+    miniCinta = { t: 0, dur: 4.5, hold: false, burst: false, nextBurst: 1.1 + Math.random() * 0.9, burstLeft: 0, warn: FL.warn };
     var btn = $('cintaBtn');
     function dn(e) { e.preventDefault(); if (miniCinta) miniCinta.hold = true; }
     function up() { if (miniCinta) miniCinta.hold = false; }
@@ -1227,15 +2380,20 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     btn.addEventListener('touchstart', dn, { passive: false });
     btn.addEventListener('touchend', up);
   }
-  function buildSimbolos(body) {
+  function buildSimbolos(body, type) {
+    var CF = {
+      simbolos: { glyphs: ['☾', '†', '☠', '✶'], freqs: [392, 523, 330, 659], intro: 'El sello de sal protege este rincón del claro. Mira el orden en que se encienden los símbolos y repítelo tal cual.', done: '¡El sello está completo! Este rincón ya es seguro.', wrong: 'Ese no era… el sello se apaga. Mira el orden otra vez.', your: 'Ahora tú: repite el orden del sello.', count: 'Símbolos: ' },
+      piano: { glyphs: ['DO', 'RE', 'MI', 'SOL', 'LA'], freqs: [262, 294, 330, 392, 440], intro: 'El piano de la mansión guarda la melodía que ella odia. Mira el orden en que suenan las teclas y repítelo tal cual.', done: '¡La melodía suena completa! La casa entera contuvo el aliento…', wrong: 'Esa nota no era… la melodía se apaga. Escucha el orden otra vez.', your: 'Ahora tú: toca la melodía.', count: 'Notas: ' },
+      rayosx: { glyphs: ['✚', '◎', '⚕', '✛'], freqs: [440, 523, 349, 587], intro: 'La máquina de rayos X necesita su secuencia de calibración. Mira el orden en que se encienden los controles y repítelo tal cual.', done: '¡Rayos X activos! La placa revela lo que ella esconde…', wrong: 'Ese control no era… la máquina se apaga. Mira el orden otra vez.', your: 'Ahora tú: repite la calibración.', count: 'Controles: ' }
+    }[type] || { glyphs: ['☾', '†', '☠', '✶'], freqs: [392, 523, 330, 659], intro: '', done: '', wrong: '', your: '', count: 'Símbolos: ' };
     var wrap = document.createElement('div');
     wrap.className = 'miniCenter';
-    wrap.innerHTML = '<div class="miniMsg" id="symMsg">El sello de sal protege este rincón del claro. Mira el orden en que se encienden los símbolos y repítelo tal cual.</div>' +
+    wrap.innerHTML = '<div class="miniMsg" id="symMsg">' + CF.intro + '</div>' +
       '<div class="symGrid" id="symGrid"></div>' +
       '<div class="miniMsg" id="symStep"></div>';
     body.appendChild(wrap);
-    var glyphs = ['☾', '†', '☠', '✶'];
-    var freqs = [392, 523, 330, 659];
+    var glyphs = CF.glyphs;
+    var freqs = CF.freqs;
     var grid = $('symGrid');
     var btns = [];
     function lightSym(i, dur) {
@@ -1246,6 +2404,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
       var b = document.createElement('button');
       b.className = 'symBtn';
       b.textContent = g;
+      if (g.length > 2) b.style.fontSize = '19px'; // las notas del piano son palabras
       b.disabled = true;
       b.setAttribute('aria-label', 'Símbolo ' + (i + 1));
       b.addEventListener('click', function () {
@@ -1255,10 +2414,10 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
         if (i === miniSimbolos.seq[miniSimbolos.inputIdx]) {
           miniSimbolos.inputIdx++;
           var st = $('symStep');
-          if (st) st.textContent = 'Símbolos: ' + miniSimbolos.inputIdx + ' / ' + miniSimbolos.seq.length;
+          if (st) st.textContent = CF.count + miniSimbolos.inputIdx + ' / ' + miniSimbolos.seq.length;
           if (miniSimbolos.inputIdx >= miniSimbolos.seq.length) {
             var sm = $('symMsg');
-            if (sm) sm.textContent = '¡El sello está completo! Este rincón ya es seguro.';
+            if (sm) sm.textContent = CF.done;
             tone(784, 0.3, 'sine', 0.18, 0.05);
             miniSimbolos = null;
             setTimeout(function () { closeMini(true); }, 420);
@@ -1266,7 +2425,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
         } else {
           noiseBurst(0.3, 500, 0.25);
           var sm2 = $('symMsg');
-          if (sm2) sm2.textContent = 'Ese no era… el sello se apaga. Mira el orden otra vez.';
+          if (sm2) sm2.textContent = CF.wrong;
           miniSimbolos.phase = 'show'; miniSimbolos.idx = 0; miniSimbolos.t = 0.9; miniSimbolos.inputIdx = 0;
           btns.forEach(function (x) { x.disabled = true; });
           var st2 = $('symStep');
@@ -1277,22 +2436,27 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
       btns.push(b);
     });
     var seq = [];
-    for (var k = 0; k < 4; k++) seq.push(Math.floor(Math.random() * 4));
-    miniSimbolos = { seq: seq, phase: 'show', idx: 0, t: 0.7, inputIdx: 0, btns: btns, freqs: freqs, litT: 0 };
+    for (var k = 0; k < 4; k++) seq.push(Math.floor(Math.random() * glyphs.length));
+    miniSimbolos = { seq: seq, phase: 'show', idx: 0, t: 0.7, inputIdx: 0, btns: btns, freqs: freqs, litT: 0, yourText: CF.your, countText: CF.count };
   }
-  function buildFotos(body) {
+  function buildFotos(body, type) {
+    var FL = {
+      fotos: { intro: 'Ella te mira desde las fotos de la pared. Arranca las 6 fotos malditas para romper su mirada.', count: 'Fotos arrancadas: ', aria: 'Foto maldita ', cls: 'foto', label: '' },
+      expedientes: { intro: 'Los expedientes de los pacientes quedaron tirados por el archivo la noche del cierre. Recoge los 6 expedientes antes de que ella vuelva por el pasillo.', count: 'Expedientes recogidos: ', aria: 'Expediente ', cls: 'foto file', label: '<span>EXPEDIENTE</span>' }
+    }[type] || { intro: '', count: '', aria: '', cls: 'foto', label: '' };
     var wrap = document.createElement('div');
     wrap.className = 'miniCenter';
-    wrap.innerHTML = '<div class="miniMsg">Ella te mira desde las fotos de la pared. Arranca las 6 fotos malditas para romper su mirada.</div>' +
+    wrap.innerHTML = '<div class="miniMsg">' + FL.intro + '</div>' +
       '<div class="fotoGrid" id="fotoGrid"></div>' +
-      '<div class="miniMsg" id="fotoMsg">Fotos arrancadas: 0 / 6</div>';
+      '<div class="miniMsg" id="fotoMsg">' + FL.count + '0 / 6</div>';
     body.appendChild(wrap);
     var grid = $('fotoGrid');
     var torn = 0;
     for (var i = 0; i < 6; i++) {
       var f = document.createElement('button');
-      f.className = 'foto';
-      f.setAttribute('aria-label', 'Foto maldita ' + (i + 1));
+      f.className = FL.cls;
+      if (FL.label) f.innerHTML = FL.label;
+      f.setAttribute('aria-label', FL.aria + (i + 1));
       f.style.transform = 'rotate(' + (Math.random() * 6 - 3).toFixed(1) + 'deg)';
       (function (btn) {
         btn.addEventListener('click', function () {
@@ -1302,12 +2466,122 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
           noiseBurst(0.16, 1400, 0.22, 'highpass');
           tone(196, 0.12, 'sawtooth', 0.06);
           var fm = $('fotoMsg');
-          if (fm) fm.textContent = 'Fotos arrancadas: ' + torn + ' / 6';
+          if (fm) fm.textContent = FL.count + torn + ' / 6';
           if (torn >= 6) setTimeout(function () { closeMini(true); }, 380);
         });
       })(f);
       grid.appendChild(f);
     }
+  }
+  function buildBuscar(body, type) {
+    // Buscar el bueno entre 6: el retrato de ELLA en la biblioteca o la
+    // llave del botiquín en los cajones de la farmacia. Cada acierto de
+    // más no hay: los fallos solo hacen ruido y pierdes tiempo con ella
+    // suelta por el mapa.
+    var FL = type === 'llave'
+      ? { intro: 'La llave del botiquín está escondida en uno de los cajones de la farmacia. Revisa los cajones uno a uno hasta encontrarla… cada cajón vacío hace ruido.', count: 'Cajones revisados: ', aria: 'Cajón ', found: '¡Ahí está la llave del botiquín! Ya nada de este hospital queda cerrado para ti…', miss: 'Vacío… solo vendas viejas y polvo.' }
+      : { intro: 'Entre los retratos de la familia hay uno que no pertenece a nadie: el de ELLA. Revisa los retratos uno a uno y encuentra el suyo… los demás solo te miran.', count: 'Retratos revisados: ', aria: 'Retrato ', found: '¡Es este! Su retrato: mirarlo de frente rompe un poco de su poder sobre la casa…', miss: 'Un antepasado cualquiera… sigue buscando.' };
+    var wrap = document.createElement('div');
+    wrap.className = 'miniCenter';
+    wrap.innerHTML = '<div class="miniMsg">' + FL.intro + '</div>' +
+      '<div class="fotoGrid" id="fotoGrid"></div>' +
+      '<div class="miniMsg" id="fotoMsg">' + FL.count + '0 / 6</div>';
+    body.appendChild(wrap);
+    var grid = $('fotoGrid');
+    var target = Math.floor(Math.random() * 6);
+    var checked = 0, foundIt = false;
+    for (var i = 0; i < 6; i++) {
+      var f = document.createElement('button');
+      f.className = 'foto';
+      f.setAttribute('aria-label', FL.aria + (i + 1));
+      f.style.transform = 'rotate(' + (Math.random() * 6 - 3).toFixed(1) + 'deg)';
+      (function (btn, idx) {
+        btn.addEventListener('click', function () {
+          if (foundIt || btn.classList.contains('torn')) return;
+          if (idx === target) {
+            foundIt = true;
+            btn.classList.add('found');
+            noiseBurst(0.3, 700, 0.2);
+            tone(784, 0.3, 'sine', 0.16);
+            tone(1046, 0.4, 'sine', 0.14, 0.1);
+            var fm = $('fotoMsg');
+            if (fm) fm.textContent = FL.found;
+            setTimeout(function () { closeMini(true); }, 650);
+          } else {
+            btn.classList.add('torn');
+            checked++;
+            noiseBurst(0.16, 900, 0.18, 'highpass');
+            var fm2 = $('fotoMsg');
+            if (fm2) fm2.textContent = FL.miss + ' (' + FL.count + checked + ' / 6)';
+          }
+        });
+      })(f, i);
+      grid.appendChild(f);
+    }
+  }
+  function buildReloj(body) {
+    // Dar cuerda al reloj de pie: pulsar sin parar; si te detienes, la
+    // cuerda se afloja (lo descuenta updateMini)
+    var wrap = document.createElement('div');
+    wrap.className = 'miniCenter';
+    wrap.innerHTML = '<div class="miniMsg">El reloj de pie lleva años parado a la misma hora: la de su muerte. Dale cuerda pulsando sin parar: cada vuelta suma, pero la cuerda se afloja si te detienes.</div>' +
+      '<div class="miniPct" id="relojPct">0%</div>' +
+      '<div class="bar" style="width:100%"><i id="relojFill"></i></div>' +
+      '<button class="miniBtn" id="relojBtn">DAR CUERDA</button>' +
+      '<div class="miniMsg" id="relojMsg"></div>';
+    body.appendChild(wrap);
+    miniReloj = { wind: 0, tick: false };
+    $('relojBtn').addEventListener('click', function () {
+      if (!miniReloj) return;
+      miniReloj.wind = Math.min(100, miniReloj.wind + 7);
+      miniReloj.tick = !miniReloj.tick;
+      tone(miniReloj.tick ? 1180 : 940, 0.05, 'square', 0.07);
+      var rm = $('relojMsg');
+      if (rm && miniReloj.wind >= 70) rm.textContent = '¡Ya casi! El péndulo quiere moverse…';
+    });
+  }
+  function buildCaja(body) {
+    // La caja fuerte: la rueda de dígitos gira sin parar (updateMini) y
+    // hay que fijar los 3 dígitos de la combinación cuando pasan; cada
+    // acierto acelera la rueda
+    var target = [Math.floor(Math.random() * 10), Math.floor(Math.random() * 10), Math.floor(Math.random() * 10)];
+    var wrap = document.createElement('div');
+    wrap.className = 'miniCenter';
+    wrap.innerHTML = '<div class="miniMsg">La caja fuerte de la familia guarda lo que ella más teme. La combinación está grabada en la tapa: <b>' + target.join(' · ') + '</b>. Los dígitos giran sin parar: pulsa FIJAR justo cuando pase el dígito correcto, tres veces.</div>' +
+      '<div class="cajaDigit" id="cajaDigit">0</div>' +
+      '<div class="cajaSlots" id="cajaSlots">_ _ _</div>' +
+      '<button class="miniBtn" id="cajaBtn">FIJAR DÍGITO</button>' +
+      '<div class="miniMsg" id="cajaMsg"></div>';
+    body.appendChild(wrap);
+    miniCaja = { t: 0, speed: 6.5, slot: 0, target: target, locked: [] };
+    $('cajaBtn').addEventListener('click', function () {
+      if (!miniCaja) return;
+      var cur = Math.floor(miniCaja.t) % 10;
+      if (cur === miniCaja.target[miniCaja.slot]) {
+        miniCaja.locked.push(cur);
+        miniCaja.slot++;
+        miniCaja.speed += 1.6;
+        tone(920, 0.12, 'square', 0.1);
+        tone(1380, 0.18, 'square', 0.08, 0.06);
+        var cs = $('cajaSlots');
+        if (cs) {
+          var s = miniCaja.locked.join(' ');
+          for (var r = miniCaja.slot; r < 3; r++) s += ' _';
+          cs.textContent = s;
+        }
+        var cm = $('cajaMsg');
+        if (miniCaja.slot >= 3) {
+          if (cm) cm.textContent = '¡CLIC! La caja fuerte se abre… dentro hay luz, no dinero.';
+          miniCaja = null;
+          setTimeout(function () { closeMini(true); }, 600);
+        } else if (cm) cm.textContent = '¡Dígito fijado! Van ' + miniCaja.slot + ' de 3… y la rueda gira más rápido.';
+      } else {
+        noiseBurst(0.2, 500, 0.22);
+        flashStaticFx(0.25);
+        var cm2 = $('cajaMsg');
+        if (cm2) cm2.textContent = 'Ese no era: la rueda se trabó un segundo. El dígito que toca es el ' + miniCaja.target[miniCaja.slot] + '.';
+      }
+    });
   }
   function updateMini(dt) {
     if (!miniOpen) return;
@@ -1328,7 +2602,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
           noiseBurst(0.35, 2600, 0.16, 'highpass');
           flashStaticFx(0.35);
           var cm = $('cintaMsg');
-          if (cm) cm.textContent = '⚠ ¡ESTÁTICA! ¡Suelta el botón!';
+          if (cm) cm.textContent = c.warn || '⚠ ¡ESTÁTICA! ¡Suelta el botón!';
         }
       } else {
         c.burstLeft -= dt;
@@ -1349,6 +2623,25 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
       if (cp) cp.textContent = pct + '%';
       if (c.t >= c.dur) { miniCinta = null; closeMini(true); }
     }
+    if (miniReloj) {
+      miniReloj.wind = Math.max(0, miniReloj.wind - dt * 6);
+      var rpct = Math.floor(miniReloj.wind);
+      var rf = $('relojFill'), rpc = $('relojPct');
+      if (rf) rf.style.width = rpct + '%';
+      if (rpc) rpc.textContent = rpct + '%';
+      if (miniReloj.wind >= 100) {
+        tone(660, 0.4, 'sine', 0.14);
+        tone(495, 0.7, 'sine', 0.12, 0.3);
+        miniReloj = null;
+        closeMini(true);
+      }
+    }
+    if (miniCaja) {
+      miniCaja.t += dt * miniCaja.speed;
+      if (miniCaja.t >= 10) miniCaja.t -= 10;
+      var cdg = $('cajaDigit');
+      if (cdg) cdg.textContent = Math.floor(miniCaja.t);
+    }
     if (miniSimbolos && miniSimbolos.phase === 'show') {
       var sm = miniSimbolos;
       if (sm.litT > 0) {
@@ -1362,9 +2655,9 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
             sm.inputIdx = 0;
             sm.btns.forEach(function (x) { x.disabled = false; });
             var smg = $('symMsg');
-            if (smg) smg.textContent = 'Ahora tú: repite el orden del sello.';
+            if (smg) smg.textContent = miniSimbolos.yourText;
             var stp = $('symStep');
-            if (stp) stp.textContent = 'Símbolos: 0 / ' + sm.seq.length;
+            if (stp) stp.textContent = miniSimbolos.countText + '0 / ' + sm.seq.length;
           } else {
             var si = sm.seq[sm.idx];
             sm.btns[si].classList.add('lit');
@@ -1428,7 +2721,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     if (mp.active && !mpMute) mpSend({ t: 'pallet', i: idx, s: 'dropped' });
     sfx('pallet');
     var d = dist2(sadako.x, sadako.z, p.x, p.z);
-    if (!mp.active && d < 2.1 && sadako.state !== 'stunned') {
+    if (mpAiLocal() && d < 2.1 && sadako.state !== 'stunned') {
       sadako.state = 'stunned'; sadako.stun = 2;
       toast('¡Le cayó el pallet encima! Aturdida 2 s', 2000);
     } else {
@@ -1440,6 +2733,15 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
      Sin derribo ni ganchos: el primer golpe te hiere (más lento) y el
      segundo te atrapa, como la muerte del impostor en Among Us. */
   function hitPlayer() {
+    // Cooperativo en línea: si la Sadako IA del anfitrión golpeó a un
+    // invitado (su posición ocupaba temporalmente la del jugador local),
+    // el golpe viaja a ESE jugador y él aplica su propio daño
+    if (typeof mpHitTarget !== 'undefined' && mpHitTarget >= 0) {
+      mpSendTo(mpHitTarget, { t: 'hit' });
+      sadako.pauseT = 1.8;
+      sfx('hit');
+      return;
+    }
     if (miniOpen) closeMini(false); // el golpe te arranca del panel de la tarea
     S.hitsTaken++;
     if (S.health === 0) {
@@ -1486,8 +2788,10 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     if (!showcase) return;
     showcase.visible = true;
     if (mapGroup) mapGroup.visible = false;
+    if (procGroup) procGroup.visible = false;
     if (sadakoGame) sadakoGame.visible = false;
     if (survGame) survGame.visible = false;
+    if (survGame2) survGame2.visible = false;
     gens.forEach(function (g) { if (g) g.group.visible = false; });
     tasks.forEach(function (t) { if (t) t.group.visible = false; });
     pallets.forEach(function (p) { if (p) p.group.visible = false; });
@@ -1514,19 +2818,21 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     lightsOut = 8;
     if (ambLight) ambLight.intensity = 0.04;
     if (moonLight) moonLight.intensity = 0.03;
-    if (scene) scene.fog.density = 0.085;
+    if (scene) scene.fog.density = Math.min(0.095, AMBIENT.fogDensity * 2.2);
     sabChipShow('⚠ SABOTAJE · SIN LUZ');
     toast('¡SABOTAJE! La impostora apagó las luces. Solo queda tu linterna…', 3400);
     sfx('sting');
     noiseBurst(0.4, 220, 0.35);
+    if (mp.active && mp.mode === 'coop' && mp.isHost && !mpMute && S.screen === 'playing') mpSend({ t: 'sab', k: 'lights' });
   }
   function restoreLights() {
     lightsOut = 0;
-    if (ambLight) ambLight.intensity = 0.55;
-    if (moonLight) moonLight.intensity = 0.5;
-    if (scene) scene.fog.density = 0.038;
+    if (ambLight) ambLight.intensity = AMBIENT.ambInt;
+    if (moonLight) moonLight.intensity = AMBIENT.moonInt;
+    if (scene) scene.fog.density = AMBIENT.fogDensity;
     if (doorSab <= 0) sabChipShow(null);
     tone(520, 0.15, 'sine', 0.1);
+    if (mp.active && mp.mode === 'coop' && mp.isHost && !mpMute && S.screen === 'playing') mpSend({ t: 'sab', k: 'lightsOff' });
   }
   function sabotageDoors() {
     doorSab = 12;
@@ -1536,6 +2842,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     toast('¡SABOTAJE! La impostora cerró las puertas de salida…', 3400);
     noiseBurst(0.35, 300, 0.5);
     tone(160, 0.4, 'square', 0.2, 0, 80);
+    if (mp.active && mp.mode === 'coop' && mp.isHost && !mpMute && S.screen === 'playing') mpSend({ t: 'sab', k: 'doors' });
   }
   function restoreDoors() {
     doorSab = 0;
@@ -1543,6 +2850,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     doorLights.forEach(function (pl) { pl.color.setHex(0x33cc44); });
     if (lightsOut <= 0) sabChipShow(null);
     toast('Las puertas de salida se abrieron de nuevo.', 2200);
+    if (mp.active && mp.mode === 'coop' && mp.isHost && !mpMute && S.screen === 'playing') mpSend({ t: 'sab', k: 'doorsOff' });
   }
   function updateSabotage(dt) {
     if (lightsOut > 0) { lightsOut -= dt; if (lightsOut <= 0) restoreLights(); }
@@ -1557,6 +2865,34 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     if (!opts.length) return;
     var pick = opts[Math.floor(Math.random() * opts.length)];
     if (pick === 'lights') sabotageLights(); else sabotageDoors();
+  }
+
+  /* ================= SONIDOS DE AMBIENTE POR MAPA =================
+     El claro suena a viento (ya está en initAudio). La mansión deja oír
+     de vez en cuando un piano fantasmal o el carillón del reloj, y el
+     hospital, el pitido de un monitor que sigue encendido en alguna
+     habitación. Son tonos procedurales suaves, sin archivos. */
+  var mapAudioT = 4;
+  function updateMapAudio(dt) {
+    if (!AC || S.screen !== 'playing') return;
+    mapAudioT -= dt;
+    if (mapAudioT > 0) return;
+    if (currentMap === 'mansion') {
+      mapAudioT = 6 + Math.random() * 6;
+      if (Math.random() < 0.5) { // dos notas de piano a lo lejos
+        tone(196, 1.6, 'sine', 0.05);
+        tone(294, 1.6, 'sine', 0.04, 0.02);
+      } else { // el carillón del reloj de pie
+        tone(660, 0.5, 'sine', 0.05);
+        tone(495, 0.9, 'sine', 0.05, 0.55);
+      }
+    } else if (currentMap === 'hospital') {
+      mapAudioT = 4.5 + Math.random() * 4;
+      tone(880, 0.09, 'sine', 0.045); // pitido de monitor
+      if (Math.random() < 0.5) tone(880, 0.09, 'sine', 0.045, 0.28);
+    } else {
+      mapAudioT = 5;
+    }
   }
 
   /* ================= SADAKO: POSES ================= */
@@ -1839,9 +3175,13 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
       if (sadako.state !== 'chase') {
         sadako.state = 'chase';
         S.chase = true;
-        sfx('sting');
-        $('chase').classList.remove('hidden');
-        toast('¡Está encima de ti! ¡CORRE!', 1500);
+        // En cooperativo, si su objetivo es un invitado, los sustos en
+        // pantalla (aviso, sonido) son para él, no para el anfitrión
+        if (aiTargetLocal) {
+          sfx('sting');
+          $('chase').classList.remove('hidden');
+          toast('¡Está encima de ti! ¡CORRE!', 1500);
+        }
       }
       S.chaseLostT = 0;
     } else if (seenFar && (sadako.state === 'patrol' || sadako.state === 'investigate')) {
@@ -1917,6 +3257,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
       if (sadako.breakT <= 0) {
         var bp = pallets[sadako.breakTarget];
         if (bp) { bp.state = 'broken'; bp.group.visible = false; palletSetOBB(bp); buildNavGrid(); }
+        if (mp.active && mp.mode === 'coop' && mp.isHost) mpSend({ t: 'pallet', i: sadako.breakTarget, s: 'broken' });
         sadako.breakTarget = -1;
         sfx('break');
         sadako.state = 'patrol';
@@ -1982,8 +3323,9 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
       sadako.lastStep += Math.hypot(speed * dt, 0);
       if (sadako.lastStep > 1.1) { sadako.lastStep = 0; sfx('kstep'); }
     }
-    // Latido por proximidad
-    if (S.screen === 'playing') {
+    // Latido por proximidad (solo si el objetivo de la IA eres tú; en
+    // cooperativo el anfitrión calcula el suyo aparte en mpTick)
+    if (S.screen === 'playing' && aiTargetLocal) {
       var prox = Math.max(0, 1 - dPlayer / 14);
       heartTimer -= dt;
       if (prox > 0.05 && heartTimer <= 0) {
@@ -2004,9 +3346,9 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
         if (sadako.flickT > 0) {
           sadako.flickT -= dt;
           var fl = 0.15 + Math.random() * 0.5;
-          if (ambLight) ambLight.intensity = 0.55 * fl;
-          if (moonLight) moonLight.intensity = 0.5 * fl;
-          if (sadako.flickT <= 0) { if (ambLight) ambLight.intensity = 0.55; if (moonLight) moonLight.intensity = 0.5; }
+          if (ambLight) ambLight.intensity = AMBIENT.ambInt * fl;
+          if (moonLight) moonLight.intensity = AMBIENT.moonInt * fl;
+          if (sadako.flickT <= 0) { if (ambLight) ambLight.intensity = AMBIENT.ambInt; if (moonLight) moonLight.intensity = AMBIENT.moonInt; }
         }
       }
     }
@@ -2104,8 +3446,9 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
         p.pivot.rotation.x = -Math.PI / 2 + (target + Math.PI / 2) * k;
         if (k >= 1) {
           p.state = 'dropped';
-          // ¿Le cayó encima a la Sadako en el momento de caer?
-          if (!mp.active && dist2(sadako.x, sadako.z, p.x, p.z) < 2.1 && sadako.state !== 'stunned') {
+          // ¿Le cayó encima a la Sadako en el momento de caer? (solo donde
+          // vive la IA de verdad: solitario o el anfitrión cooperativo)
+          if (mpAiLocal() && dist2(sadako.x, sadako.z, p.x, p.z) < 2.1 && sadako.state !== 'stunned') {
             sadako.state = 'stunned'; sadako.stun = 2;
             toast('¡Le cayó el pallet encima! Aturdida 2 s', 2000);
           }
@@ -2253,6 +3596,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
       updateTasks();
       updateDoors(dt);
       updateCamera(dt);
+      updateMapAudio(dt);
       if (!miniOpen) updatePrompts();
       // Escapar por una puerta abierta (y no saboteada en este momento).
       // En modo asesino el que cruza es la presa: lo vigila updatePrey.
@@ -2266,7 +3610,14 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
         }
       }
     }
+    // Cooperativo en línea: si el anfitrión ya cayó o escapó pero quedan
+    // invitados vivos, su Sadako IA sigue cazándolos (él es la autoridad)
+    if (mp.active && mp.isHost && mp.mode === 'coop' && S.screen === 'end' && mpCoopOthersAlive()) {
+      mpHostOut = true;
+      mpCoopHostSim(dt);
+    }
     updateStaticFx(dt);
+    updateAtmosphere(dt);
     renderer.render(scene, camera);
   }
   function updatePrompts() {
@@ -2289,7 +3640,8 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
           : (isTouch ? 'Toca ATACAR para VIAJAR por la televisión' : 'Pulsa <kbd>E</kbd> para VIAJAR por la televisión'));
         return;
       }
-      if (dist2(player.x, player.z, prey.x, prey.z) < 2.3) {
+      var ktg = mp.active ? (mpNearestSurvEnt() || prey) : prey;
+      if (dist2(player.x, player.z, ktg.x, ktg.z) < 2.3) {
         setPrompt(isTouch ? 'Toca ATACAR para golpearlo' : 'Clic o <kbd>F</kbd> para ATACAR');
         return;
       }
@@ -2357,11 +3709,13 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
   }
   function killerTravel(fromIdx) {
     if (killer.tvCD > 0) { toast('La televisión aún zumba con estática… espera ' + Math.ceil(killer.tvCD) + ' s.', 1400); return; }
-    // Sales por la tele más cercana a tu presa (sin caerle encima)
+    // Sales por la tele más cercana a tu presa (sin caerle encima). En
+    // línea con 2 sobrevivientes, la presa es el que esté más cerca de ti
+    var tg = mp.active ? (mpNearestSurvEnt() || prey) : prey;
     var best = -1, bd = 1e9;
     for (var i = 0; i < TV_POS.length; i++) {
       if (i === fromIdx) continue;
-      var d = dist2(prey.x, prey.z, TV_POS[i][0], TV_POS[i][1]);
+      var d = dist2(tg.x, tg.z, TV_POS[i][0], TV_POS[i][1]);
       if (d > 4 && d < bd) { bd = d; best = i; }
     }
     if (best < 0) { for (var j = 0; j < TV_POS.length; j++) { if (j !== fromIdx) { best = j; break; } } }
@@ -2375,7 +3729,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     var p = collide(tp[0] + (-tp[0] / len) * 0.95, tp[1] + (-tp[1] / len) * 0.95, 0.35);
     p = pushOutOf(p[0], p[1], 0.55, LOS_OBBS);
     player.x = p[0]; player.z = p[1];
-    player.yaw = Math.atan2(-(prey.x - player.x), -(prey.z - player.z));
+    player.yaw = Math.atan2(-(tg.x - player.x), -(tg.z - player.z));
     killer.tvCD = 10;
     toast('Saliste por otra televisión… él está cerca.', 2200);
   }
@@ -2403,7 +3757,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
       prey.x = kb[0]; prey.z = kb[1]; prey.path = null;
       updateTasks();
       if (prey.health >= 2) {
-        endGame(true, 'Dos golpes entre la niebla y la chamarra naranja quedó tirada en el claro. La cinta se sigue reproduciendo…');
+        endGame(true, 'Dos golpes entre la niebla y tu presa quedó tirada en el claro. La cinta se sigue reproduciendo…');
         return;
       }
       prey.state = 'flee'; prey.fleeT = 3.2; prey.path = null;
@@ -2414,20 +3768,22 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
       killer.atkCD = 0.55;
     }
   }
-  function preyPose(dt, moving, speed) {
-    if (!survGame || !survGameParts.cabeza) return;
+  // Pose genérica de un sobreviviente dibujado (la presa IA o un jugador
+  // remoto): camina, trabaja en su tarea, espera o se tambalea con un golpe
+  function preyPoseFor(e, parts, home, dt, moving, speed) {
+    if (!parts || !parts.cabeza) return;
     var t = S.time;
     var pose = {};
     if (moving) {
-      prey.walkPhase += dt * (Math.PI * 2 / 1.15) * (speed / 3);
-      var ph = prey.walkPhase;
+      e.walkPhase += dt * (Math.PI * 2 / 1.15) * (speed / 3);
+      var ph = e.walkPhase;
       var sD = Math.sin(ph), sI = Math.sin(ph + Math.PI);
       pose.pierna_derecha = [0.42 * sD, 0, 0];
       pose.pierna_izquierda = [0.42 * sI, 0, 0];
       pose.brazo_derecho = [0.38 * sI, 0, 0.05];
       pose.brazo_izquierdo = [0.38 * sD, 0, -0.05];
       pose.cabeza = [0.03 * Math.sin(2 * ph), 0.15 * Math.sin(ph * 0.5), 0];
-    } else if (prey.state === 'doing') {
+    } else if (e.state === 'doing') {
       // Encogido sobre el rincón, trabajando con las manos
       pose.cabeza = [0.3 + 0.04 * Math.sin(t * 1.7), 0.1 * Math.sin(t * 0.9), 0];
       pose.brazo_derecho = [-0.7 + 0.18 * Math.sin(t * 5.1), 0, 0.1];
@@ -2438,18 +3794,22 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
       pose.brazo_derecho = [0.05 * Math.sin(t * 0.8), 0, 0.04];
       pose.brazo_izquierdo = [0.05 * Math.sin(t * 0.8 + 1), 0, -0.04];
     }
-    // Tambaleo al recibir tu golpe: se echa hacia atrás, alza los brazos
-    // y se sacude; decae en medio segundo (lo activa killerAttack)
-    if (prey.flinchT > 0) {
-      prey.flinchT -= dt;
-      var ff = Math.max(0, prey.flinchT) * 2; // 1 → 0
+    // Tambaleo al recibir un golpe: se echa hacia atrás, alza los brazos
+    // y se sacude; decae en medio segundo (lo activa el golpe de la Sadako)
+    if (e.flinchT > 0) {
+      e.flinchT -= dt;
+      var ff = Math.max(0, e.flinchT) * 2; // 1 → 0
       var wob = Math.sin(t * 46) * 0.35 * ff;
       pose.torso = [-0.5 * ff, 0, wob];
       pose.cabeza = [-0.45 * ff, 0, wob * 0.7];
       pose.brazo_derecho = [-2.3 * ff, 0, 0.3 * ff];
       pose.brazo_izquierdo = [-2.3 * ff, 0, -0.3 * ff];
     }
-    applyPose(survGameParts, SURV_GAME_HOME, pose);
+    applyPose(parts, home, pose);
+  }
+  function preyPose(dt, moving, speed) {
+    if (!survGame) return;
+    preyPoseFor(prey, survGameParts, SURV_GAME_HOME, dt, moving, speed);
   }
   function updatePrey(dt) {
     if (!survGame) return;
@@ -2539,21 +3899,68 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
   }
 
   /* ================= MULTIJUGADOR EN LÍNEA (PeerJS / WebRTC) =================
-     Dos jugadores, un claro: el anfitrión crea una sala con código de 4
-     letras y elige su papel; el invitado se une con el papel contrario.
-     Cada uno manda su posición ~15 veces/s y el otro se dibuja con su
-     modelo (la Sadako o el sobreviviente de chamarra naranja). El
-     sobreviviente es la autoridad de sus tareas y de su salud; la Sadako
-     decide sus golpes por distancia y puede romper los pallets caídos.
-     Sin servidor propio: la conexión es directa entre navegadores. */
+     Hasta 3 jugadores en un claro, topología en estrella: el anfitrión
+     crea la sala con código de 4 letras, elige el MODO al crearla y acepta
+     hasta 2 invitados; todo el tráfico entre invitados pasa por él, que lo
+     reenvía. Los papeles se asignan al empezar y viajan en el mensaje de
+     inicio. Dos modos, los del juego original:
+       · 'hunt': uno de los 3 es la Sadako contra 2 sobrevivientes. El
+         anfitrión elige su papel; si es sobreviviente, el primer invitado
+         es la Sadako y el segundo, sobreviviente.
+       · 'coop': los 3 son sobrevivientes contra la Sadako IA, cuya
+         autoridad es el anfitrión: él la simula (persigue al sobreviviente
+         vivo más cercano), sincroniza su posición y reparte sus golpes y
+         sabotajes.
+     La partida empieza cuando están los 3 o cuando el anfitrión la inicia
+     con 2. Las tareas son DEL EQUIPO (las 5 entre todos abren las
+     puertas); cada sobreviviente tiene su salud (2 golpes = atrapado) y
+     su propia huida. Si un sobreviviente se desconecta, la partida sigue
+     con los que queden; si se va la Sadako, ganan los sobrevivientes; si
+     se va el anfitrión, la partida termina avisando (la sala vive en su
+     navegador). Sin servidor propio: conexión directa entre navegadores. */
   var MP_PREFIX = 'pesadilla3d2-';
-  var mp = { active: false, peer: null, conn: null, isHost: false, hostRole: 'surv', roleChoice: 'surv', code: '', busy: false };
+  var mp = { active: false, peer: null, conn: null, isHost: false, mode: 'hunt', modeChoice: 'hunt', hostRole: 'surv', roleChoice: 'surv', code: '', busy: false, myId: 0, started: false, roles: null, looks: null, nextGuest: 1, map: 'claro' };
+  var mpLookPrefs = {}; // look preferido por jugador (el del menú); el anfitrión asigna sin repetir
+  var mpConns = {};   // solo el anfitrión: id de invitado -> conexión
+  var mpEnts = {};    // jugadores remotos por id: {id, role, model, ref, tx, tz, tyaw, act, health, out, gone, how, atkT, st}
   var mpMute = false; // true mientras se aplica un evento remoto (sin eco)
-  var mpRemote = { tx: 0, tz: -14 * MS, tyaw: 0, act: '' };
-  var mpSendT = 0;
+  var mpSendT = 0, mpSadakoSendT = 0;
   var mpBreak = { idx: -1, t: 0 }; // la Sadako en línea rompiendo un pallet
+  var mpHitTarget = -1;    // coop: invitado al que la IA golpeó (redirige hitPlayer)
+  var aiTargetLocal = true; // coop: false mientras la IA persigue a un invitado
+  var mpHostOut = false;   // coop: el anfitrión ya cayó/escapó pero su IA sigue cazando
+  var SURV_SLOTS = [[0, 14], [-3.5, 13], [3.5, 13]]; // esquinas de sobreviviente (sin escalar)
+  function mpAiLocal() { return !mp.active || (mp.mode === 'coop' && mp.isHost); }
+  function mpModeName(m) { return m === 'coop' ? '3 CONTRA LA SADAKO IA' : 'LA SADAKO CONTRA 2'; }
   function mpSend(o) {
-    if (mp.conn && mp.conn.open) { try { mp.conn.send(o); } catch (e) { /* conexión caída */ } }
+    // A todos los demás: el anfitrión reparte a sus invitados; el invitado
+    // se lo manda al anfitrión, que lo procesa y lo reenvía (mpRelay)
+    o.from = mp.myId;
+    if (mp.isHost) {
+      for (var id in mpConns) { var c = mpConns[id]; if (c && c.open) { try { c.send(o); } catch (e) { /* conexión caída */ } } }
+    } else if (mp.conn && mp.conn.open) { try { mp.conn.send(o); } catch (e) { /* conexión caída */ } }
+  }
+  function mpSendTo(id, o) {
+    // A un jugador concreto (un golpe, p. ej.): directo si eres el
+    // anfitrión; si eres invitado, va dirigido vía el anfitrión
+    if (id === mp.myId) return;
+    o.from = mp.myId;
+    if (mp.isHost) { var c = mpConns[id]; if (c && c.open) { try { c.send(o); } catch (e) {} } }
+    else { o.to = id; if (mp.conn && mp.conn.open) { try { mp.conn.send(o); } catch (e) {} } }
+  }
+  var MP_RELAY = { pos: 1, task: 1, pallet: 1, atk: 1, caught: 1, escaped: 1 };
+  function mpRelay(d, fromId) {
+    if (!mp.isHost) return;
+    if (typeof d.to === 'number') {
+      if (d.to !== 0) { var c = mpConns[d.to]; if (c && c.open) { try { c.send(d); } catch (e) {} } }
+      return;
+    }
+    if (!MP_RELAY[d.t]) return;
+    for (var id in mpConns) {
+      if (parseInt(id, 10) === fromId) continue;
+      var cc = mpConns[id];
+      if (cc && cc.open) { try { cc.send(d); } catch (e) {} }
+    }
   }
   function mpStatus(txt) { var el = $('mpStatus'); if (el) el.textContent = txt || ''; }
   function angLerp(a, b, t) {
@@ -2576,74 +3983,168 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     var p = pallets[i];
     if (!p) return;
     if (s === 'dropped') {
-      if (p.state === 'standing') { p.state = 'falling'; p.anim = 0; palletSetOBB(p); buildNavGrid(); sfx('pallet'); }
+      if (p.state === 'standing') {
+        p.state = 'falling'; p.anim = 0; palletSetOBB(p); buildNavGrid(); sfx('pallet');
+        // Donde vive la IA de verdad, el pallet que cae sobre ella la aturde
+        if (mpAiLocal() && dist2(sadako.x, sadako.z, p.x, p.z) < 2.1 && sadako.state !== 'stunned') { sadako.state = 'stunned'; sadako.stun = 2; }
+      }
     } else if (s === 'broken') {
       if (p.state !== 'broken') { p.state = 'broken'; p.group.visible = false; palletSetOBB(p); buildNavGrid(); sfx('break'); }
     }
   }
+  /* ---------- entidades remotas ---------- */
+  function mpKillerEnt() { for (var id in mpEnts) { if (mpEnts[id].role === 'killer') return mpEnts[id]; } return null; }
+  function mpHasModel(m) { for (var id in mpEnts) { if (mpEnts[id].model === m) return true; } return false; }
+  function mpSurvCount() { var n = 0; for (var id in mpEnts) { if (mpEnts[id].role === 'surv') n++; } return n; }
+  function mpSurvAlive() { var n = 0; for (var id in mpEnts) { var e = mpEnts[id]; if (e.role === 'surv' && !e.out) n++; } return n; }
+  function mpCaughtCount() { var n = 0; for (var id in mpEnts) { var e = mpEnts[id]; if (e.role === 'surv' && e.out && e.how === 'caught') n++; } return n; }
+  function mpCoopOthersAlive() { return mpSurvAlive() > 0; }
+  function mpNearestSurvEnt() {
+    var best = null, bd = 1e9;
+    for (var id in mpEnts) {
+      var e = mpEnts[id];
+      if (e.role !== 'surv' || e.out) continue;
+      e.x = e.ref.x; e.z = e.ref.z;
+      var d = dist2(player.x, player.z, e.ref.x, e.ref.z);
+      if (d < bd) { bd = d; best = e; }
+    }
+    return best;
+  }
+  function mpEntModel(e) {
+    if (e.model === 'sadako') return { obj: sadakoGame, parts: null, home: null };
+    if (e.model === 'surv1') return { obj: survGame2, parts: survGame2Parts, home: SURV_GAME2_HOME };
+    return { obj: survGame, parts: survGameParts, home: SURV_GAME_HOME };
+  }
+  function mpHideEnt(e) {
+    var m = mpEntModel(e);
+    if (m.obj) m.obj.visible = false;
+  }
+  function mpSpawnFor(id, roles, survOrder) {
+    if (roles[id] === 'killer') return [0, -14 * MS];
+    var s = SURV_SLOTS[Math.max(0, survOrder.indexOf(id))] || SURV_SLOTS[0];
+    return [s[0] * MS, s[1] * MS];
+  }
+  /* ---------- la Sadako ataca (jugador en línea) ---------- */
   function mpKillerAttack() {
     // El golpe se ve igual que en solitario; el acierto se decide aquí por
-    // distancia a la presa remota y se le avisa: ella aplica su daño.
+    // distancia a la presa viva más cercana y viaja dirigido a ESE jugador:
+    // él aplica su propio daño (2 golpes lo atrapan, como a ti)
     killer.swingT = SWING_DUR;
     noiseBurst(0.16, 700, 0.25);
     tone(180, 0.22, 'sawtooth', 0.10, 0, 70);
     mpSend({ t: 'atk' });
-    var d = dist2(player.x, player.z, prey.x, prey.z);
-    if (d < 2.1) {
+    var e = mpNearestSurvEnt();
+    var d = e ? dist2(player.x, player.z, e.ref.x, e.ref.z) : 1e9;
+    if (e && d < 2.1) {
       killer.atkCD = 1.5;
       sfx('hit');
       flashStaticFx(0.4);
       hitFxT = 0.35; hitMarkT = 0.6; camShake = 0.55; fovKick = 5;
-      prey.flinchT = 0.5;
-      mpSend({ t: 'hit' });
-      toast('¡Le diste! Si era el segundo golpe, ya es tuyo…', 2200);
+      e.ref.flinchT = 0.5;
+      e.health = Math.min(2, (e.health || 0) + 1);
+      mpSendTo(e.id, { t: 'hit' });
+      toast(e.health >= 2 ? '¡Segundo golpe! Ese sobreviviente es tuyo…' : '¡Le diste! Un golpe más y ese sobreviviente es tuyo…', 2200);
+      updateTasks();
     } else {
       camShake = Math.max(camShake, 0.12); fovKick = Math.max(fovKick, 2);
       killer.atkCD = 0.55;
     }
   }
-  function mpRemoteSadako(dt) {
-    if (!sadakoGame) return;
+  /* ---------- dibujo de remotos (interpolación) ---------- */
+  function mpRenderSadako(ent, dt) {
+    if (!sadakoGame || !ent) return;
     var px = sadako.x, pz = sadako.z;
-    var d = Math.hypot(mpRemote.tx - sadako.x, mpRemote.tz - sadako.z);
-    if (d > 5) { sadako.x = mpRemote.tx; sadako.z = mpRemote.tz; } // salto (tele): directo
-    else { var k = Math.min(1, dt * 11); sadako.x += (mpRemote.tx - sadako.x) * k; sadako.z += (mpRemote.tz - sadako.z) * k; }
-    sadako.yaw = angLerp(sadako.yaw, mpRemote.tyaw, Math.min(1, dt * 14));
+    var d = Math.hypot(ent.tx - sadako.x, ent.tz - sadako.z);
+    if (d > 5) { sadako.x = ent.tx; sadako.z = ent.tz; } // salto (tele): directo
+    else { var k = Math.min(1, dt * 11); sadako.x += (ent.tx - sadako.x) * k; sadako.z += (ent.tz - sadako.z) * k; }
+    sadako.yaw = angLerp(sadako.yaw, ent.tyaw, Math.min(1, dt * 14));
     var speed = dt > 0 ? Math.hypot(sadako.x - px, sadako.z - pz) / dt : 0;
     var moving = speed > 0.35;
-    if (sadako.attackT > 0) sadako.attackT -= dt;
-    sadako.state = moving ? 'creep' : 'stalk';
+    if (ent.atkT > 0) { ent.atkT -= dt; sadako.attackT = Math.max(0, ent.atkT); }
+    else if (sadako.attackT > 0) sadako.attackT -= dt;
+    sadako.state = ent.st || (moving ? 'creep' : 'stalk');
     sadakoGame.position.set(sadako.x, 0, sadako.z);
     sadakoGame.rotation.y = sadako.yaw;
     sadakoPose(dt, moving, Math.max(speed, 1));
     $('chase').classList.add('hidden');
-    if (S.screen === 'playing') {
+    if (S.screen === 'playing' && S.role === 'surv') {
       var prox = Math.max(0, 1 - dist2(player.x, player.z, sadako.x, sadako.z) / 14);
       heartTimer -= dt;
       if (prox > 0.05 && heartTimer <= 0) { heartbeat(prox); heartTimer = 1.15 - prox * 0.7; }
       $('vignette').style.opacity = (prox * 0.55).toFixed(2);
     }
   }
-  function mpRemotePrey(dt) {
-    if (!survGame) return;
-    var px = prey.x, pz = prey.z;
-    var d = Math.hypot(mpRemote.tx - prey.x, mpRemote.tz - prey.z);
-    if (d > 5) { prey.x = mpRemote.tx; prey.z = mpRemote.tz; }
-    else { var k = Math.min(1, dt * 11); prey.x += (mpRemote.tx - prey.x) * k; prey.z += (mpRemote.tz - prey.z) * k; }
-    prey.yaw = angLerp(prey.yaw, mpRemote.tyaw, Math.min(1, dt * 14));
-    var speed = dt > 0 ? Math.hypot(prey.x - px, prey.z - pz) / dt : 0;
-    var doing = mpRemote.act === 'doing';
-    prey.state = doing ? 'doing' : 'toTask';
-    survGame.position.set(prey.x, 0, prey.z);
-    survGame.rotation.y = prey.yaw;
-    preyPose(dt, !doing && speed > 0.35, Math.max(speed, 1));
-    if (S.screen === 'playing') {
-      var prox = Math.max(0, 1 - dist2(player.x, player.z, prey.x, prey.z) / 14);
+  function mpRenderSurv(ent, dt) {
+    var m = mpEntModel(ent);
+    if (!m.obj) return;
+    var e = ent.ref;
+    var px = e.x, pz = e.z;
+    var d = Math.hypot(ent.tx - e.x, ent.tz - e.z);
+    if (d > 5) { e.x = ent.tx; e.z = ent.tz; }
+    else { var k = Math.min(1, dt * 11); e.x += (ent.tx - e.x) * k; e.z += (ent.tz - e.z) * k; }
+    e.yaw = angLerp(e.yaw, ent.tyaw, Math.min(1, dt * 14));
+    ent.x = e.x; ent.z = e.z;
+    var speed = dt > 0 ? Math.hypot(e.x - px, e.z - pz) / dt : 0;
+    var doing = ent.act === 'doing';
+    e.state = doing ? 'doing' : 'toTask';
+    m.obj.position.set(e.x, 0, e.z);
+    m.obj.rotation.y = e.yaw;
+    preyPoseFor(e, m.parts, m.home, dt, !doing && speed > 0.35, Math.max(speed, 1));
+  }
+  /* ---------- cooperativo: la Sadako IA vive en el anfitrión ---------- */
+  function mpCoopHostSadako(dt) {
+    // Su objetivo: el sobreviviente vivo más cercano (tú o un invitado)
+    var bestId = -1, bd = 1e9;
+    if (!mpHostOut && S.role === 'surv') { bd = dist2(sadako.x, sadako.z, player.x, player.z); bestId = mp.myId; }
+    for (var id in mpEnts) {
+      var e = mpEnts[id];
+      if (e.role !== 'surv' || e.out) continue;
+      var d = dist2(sadako.x, sadako.z, e.ref.x, e.ref.z);
+      if (d < bd) { bd = d; bestId = e.id; }
+    }
+    if (bestId < 0) { aiTargetLocal = true; mpHitTarget = -1; return; }
+    if (bestId === mp.myId) {
+      aiTargetLocal = true; mpHitTarget = -1;
+      updateSadako(dt);
+      return;
+    }
+    // La IA "ve" al invitado: su posición ocupa la del jugador local un
+    // instante, la IA actúa contra él y todo vuelve a su sitio. Si le
+    // pega, hitPlayer está redirigido a ese invitado (mpHitTarget)
+    var t = mpEnts[bestId];
+    var sx = player.x, sz = player.z, sy = player.yaw;
+    player.x = t.ref.x; player.z = t.ref.z; player.yaw = t.ref.yaw;
+    aiTargetLocal = false; mpHitTarget = bestId;
+    updateSadako(dt);
+    player.x = sx; player.z = sz; player.yaw = sy;
+    mpHitTarget = -1; aiTargetLocal = true;
+    if (S.chase) { S.chase = false; $('chase').classList.add('hidden'); }
+    if (sadako.flickT <= 0 && lightsOut <= 0) { if (ambLight) ambLight.intensity = AMBIENT.ambInt; if (moonLight) moonLight.intensity = AMBIENT.moonInt; }
+    // Tu propio aviso: ella también puede estar cerca de TI
+    if (S.screen === 'playing' && !mpHostOut) {
+      var prox = Math.max(0, 1 - dist2(player.x, player.z, sadako.x, sadako.z) / 14);
       heartTimer -= dt;
       if (prox > 0.05 && heartTimer <= 0) { heartbeat(prox); heartTimer = 1.15 - prox * 0.7; }
-      $('vignette').style.opacity = (prox * 0.6).toFixed(2);
+      $('vignette').style.opacity = (prox * 0.55).toFixed(2);
     }
   }
+  function mpCoopHostSim(dt) {
+    // El anfitrión ya cayó o escapó, pero quedan invitados vivos: su IA
+    // sigue cazándolos (él es la autoridad). Se simula con la pantalla
+    // "prestada" un instante y se sigue sincronizando a la Sadako
+    var prevScreen = S.screen;
+    S.screen = 'playing';
+    mpCoopHostSadako(dt);
+    updateSabotage(dt);
+    updatePallets(dt);
+    S.screen = prevScreen;
+    mpSadakoSendT -= dt;
+    if (mpSadakoSendT <= 0) {
+      mpSadakoSendT = 0.066;
+      mpSend({ t: 'sadako', x: Math.round(sadako.x * 100) / 100, z: Math.round(sadako.z * 100) / 100, yaw: Math.round(sadako.yaw * 1000) / 1000, st: sadako.state, atk: sadako.attackT > 0 });
+    }
+  }
+  /* ---------- bucle de red ---------- */
   function mpTick(dt) {
     mpSendT -= dt;
     if (mpSendT <= 0) {
@@ -2651,8 +4152,27 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
       var pkt = { t: 'pos', x: Math.round(player.x * 100) / 100, z: Math.round(player.z * 100) / 100, yaw: Math.round(player.yaw * 1000) / 1000 };
       if (S.role === 'surv') { pkt.h = S.health; pkt.act = miniOpen ? 'doing' : ''; }
       mpSend(pkt);
+      if (mp.mode === 'coop' && mp.isHost) {
+        mpSend({ t: 'sadako', x: Math.round(sadako.x * 100) / 100, z: Math.round(sadako.z * 100) / 100, yaw: Math.round(sadako.yaw * 1000) / 1000, st: sadako.state, atk: sadako.attackT > 0 });
+      }
     }
-    if (S.role === 'surv') mpRemoteSadako(dt); else mpRemotePrey(dt);
+    for (var id in mpEnts) {
+      var e = mpEnts[id];
+      if (e.out) continue;
+      if (e.role === 'killer') mpRenderSadako(e, dt); else mpRenderSurv(e, dt);
+    }
+    // Como la Sadako, tu latido avisa de la presa viva más cercana
+    if (S.role === 'killer' && S.screen === 'playing') {
+      var ne = mpNearestSurvEnt();
+      if (ne) {
+        var prox = Math.max(0, 1 - dist2(player.x, player.z, ne.ref.x, ne.ref.z) / 14);
+        heartTimer -= dt;
+        if (prox > 0.05 && heartTimer <= 0) { heartbeat(prox); heartTimer = 1.15 - prox * 0.7; }
+        $('vignette').style.opacity = (prox * 0.6).toFixed(2);
+      }
+    }
+    // Cooperativo: el anfitrión simula a la IA y sus sabotajes
+    if (mp.mode === 'coop' && mp.isHost) { mpCoopHostSadako(dt); updateSabotage(dt); }
     // Romper un pallet lleva 2,5 s junto a él (solo la Sadako en línea)
     if (mpBreak.idx >= 0) {
       var bp = pallets[mpBreak.idx];
@@ -2663,74 +4183,200 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
           var bi = mpBreak.idx; mpBreak.idx = -1;
           mpMute = true; mpApplyPallet(bi, 'broken'); mpMute = false;
           mpSend({ t: 'pallet', i: bi, s: 'broken' });
-          toast('Pallet roto. Que siga corriendo…', 1500);
+          toast('Pallet roto. Que sigan corriendo…', 1500);
         }
       }
     }
   }
+  /* ---------- desenlaces con varios sobrevivientes ---------- */
+  function mpSurvOut(id, how) {
+    var e = mpEnts[id];
+    if (e && !e.out) {
+      e.out = true; e.how = how;
+      mpHideEnt(e);
+      if (S.screen === 'playing') {
+        if (S.role === 'killer') {
+          toast(how === 'caught'
+            ? '¡Atrapaste a un sobreviviente! Quedan ' + mpSurvAlive() + '…'
+            : 'Un sobreviviente escapó por la puerta… Quedan ' + mpSurvAlive() + '.', 2800);
+        } else {
+          toast(how === 'caught'
+            ? 'La Sadako atrapó a un compañero. Los demás siguen en el claro…'
+            : '¡Un compañero escapó por la puerta! Tú sigue: termina las tareas y sal.', 3200);
+        }
+      }
+    }
+    if (S.role === 'killer') mpCheckKillerEnd();
+    updateTasks();
+  }
+  function mpCheckKillerEnd() {
+    if (S.screen !== 'playing' || S.role !== 'killer') return;
+    if (mpSurvAlive() > 0) return;
+    var anyEsc = false;
+    for (var id in mpEnts) { var e = mpEnts[id]; if (e.role === 'surv' && e.how === 'escaped') anyEsc = true; }
+    if (anyEsc) endGame(false, 'Las puertas se cerraron tras ellos: al menos un sobreviviente escapó y ya no queda nadie a quien cazar en el claro.');
+    else endGame(true, 'Atrapaste a todos los sobrevivientes entre la niebla. La cinta se sigue reproduciendo…');
+  }
+  function mpPlayerLeft(id) {
+    var e = mpEnts[id];
+    var wasKiller = !!(e && e.role === 'killer');
+    if (e && !e.out) { e.out = true; e.gone = true; e.how = 'left'; mpHideEnt(e); }
+    if (S.screen !== 'playing') return;
+    if (wasKiller) {
+      // Sin Sadako no hay caza: los sobrevivientes ganan
+      if (S.role === 'surv') endGame(true, 'La Sadako se desconectó en mitad de la partida. La niebla se disipa… escapaste.');
+      return;
+    }
+    if (e) {
+      toast('Un sobreviviente se desconectó. La partida sigue con los que quedan…', 3200);
+      if (S.role === 'killer') mpCheckKillerEnd();
+      updateTasks();
+    }
+  }
+  /* ---------- recepción de mensajes ---------- */
   function mpOnData(d) {
     if (!d || !d.t) return;
+    var from = (typeof d.from === 'number') ? d.from : 0;
     if (d.t === 'pos') {
-      mpRemote.tx = d.x; mpRemote.tz = d.z; mpRemote.tyaw = d.yaw || 0;
-      if (typeof d.act === 'string') mpRemote.act = d.act;
-      if (S.role === 'killer' && typeof d.h === 'number' && d.h !== prey.health) {
-        prey.health = d.h; S.hitsTaken = d.h; updateTasks();
-        if (d.h >= 2 && S.screen === 'playing') endGame(true, 'Dos golpes entre la niebla y la chamarra naranja quedó tirada en el claro. La cinta se sigue reproduciendo…');
+      var e = mpEnts[from];
+      if (e && !e.out) {
+        e.tx = d.x; e.tz = d.z; e.tyaw = d.yaw || 0;
+        if (typeof d.act === 'string') e.act = d.act;
+        if (e.role === 'surv' && typeof d.h === 'number' && d.h !== e.health) {
+          e.health = d.h;
+          if (S.role === 'killer') updateTasks();
+          // Red de seguridad: salud 2 = atrapado, aunque se pierda el aviso
+          if (d.h >= 2 && S.role === 'killer') mpSurvOut(from, 'caught');
+        }
       }
+    } else if (d.t === 'sadako') {
+      var ae = mpEnts.ai;
+      if (ae) { ae.tx = d.x; ae.tz = d.z; ae.tyaw = d.yaw || 0; ae.st = d.st || ''; if (d.atk) ae.atkT = 0.6; }
     } else if (d.t === 'task') {
       mpMute = true; completeTask(d.i); mpMute = false;
     } else if (d.t === 'hit') {
-      if (S.role === 'surv' && S.screen === 'playing') {
+      // Solo si el golpe va dirigido a mí (o sin dirigir, en el duelo clásico)
+      if ((typeof d.to !== 'number' || d.to === mp.myId) && S.role === 'surv' && S.screen === 'playing') {
         hitPlayer();
         if (S.screen === 'end') mpSend({ t: 'caught' });
       }
     } else if (d.t === 'atk') {
-      sadako.attackT = 0.6; // ves su brazo barrer antes del golpe
+      var ke = mpKillerEnt();
+      if (ke) ke.atkT = 0.6; // ves su brazo barrer antes del golpe
     } else if (d.t === 'pallet') {
       mpApplyPallet(d.i, d.s);
+    } else if (d.t === 'sab') {
+      // Sabotajes de la IA cooperativa: los decide el anfitrión, tú los vives
+      mpMute = true;
+      if (d.k === 'lights') sabotageLights();
+      else if (d.k === 'lightsOff') { if (lightsOut > 0) restoreLights(); }
+      else if (d.k === 'doors') sabotageDoors();
+      else if (d.k === 'doorsOff') { if (doorSab > 0) restoreDoors(); }
+      mpMute = false;
     } else if (d.t === 'escaped') {
-      if (S.screen === 'playing') endGame(false, 'Cruzó la puerta con las 5 tareas hechas. Te quedaste mirando desde la niebla… hasta la próxima cinta.');
+      mpSurvOut(from, 'escaped');
     } else if (d.t === 'caught') {
-      if (S.screen === 'playing') endGame(true, 'Dos golpes entre la niebla y la chamarra naranja quedó tirada en el claro. La cinta se sigue reproduciendo…');
+      mpSurvOut(from, 'caught');
+    } else if (d.t === 'left') {
+      mpPlayerLeft(d.id);
+    } else if (d.t === 'look') {
+      // Preferencia de look de un invitado: el anfitrión la guarda y
+      // reasigna el vestíbulo (la asignación definitiva va en el 'start')
+      if (mp.isHost && !mp.started) {
+        mpLookPrefs[from] = (typeof d.look === 'number') ? Math.max(0, Math.min(2, d.look)) : 0;
+        if (!$('mpPanel').classList.contains('hidden')) mpBroadcastLobby();
+      }
     } else if (d.t === 'welcome') {
-      var gr = d.hostRole === 'surv' ? 'killer' : 'surv';
-      mpStatus('Conectado. Tu papel: ' + (gr === 'surv' ? 'SOBREVIVIENTE' : 'LA SADAKO') + '. Esperando a que el anfitrión empiece la partida…');
+      mp.myId = d.id; mp.mode = d.mode;
+      if (d.map) { mp.map = d.map; if (d.map !== currentMap) applyMap(d.map); } // el mapa lo manda el anfitrión
+      mpSend({ t: 'look', look: myLook }); // tu preferencia de look, para la asignación de la sala
+      mpStatus('Conectado a la sala · Modo: ' + mpModeName(d.mode) + ' · Mapa: ' + (MAP_DEFS[mp.map] ? MAP_DEFS[mp.map].name : '') + '. Esperando a que el anfitrión empiece la partida…');
+    } else if (d.t === 'lobby') {
+      mp.mode = d.mode;
+      if (d.map) { mp.map = d.map; if (d.map !== currentMap && !mp.started) applyMap(d.map); }
+      $('mpPlayers').textContent = 'Jugadores en la sala: ' + d.count + '/3 · Modo: ' + mpModeName(d.mode) + ' · Mapa: ' + (MAP_DEFS[mp.map] ? MAP_DEFS[mp.map].name : '');
+      $('mpWaitTxt').textContent = 'Esperando a que el anfitrión empiece la partida (puede empezar con 2 o esperar a que estén los 3)…';
+      var myRole = d.roles ? d.roles[mp.myId] : null;
+      if (myRole) {
+        var myLk = (d.looks && typeof d.looks[mp.myId] === 'number') ? d.looks[mp.myId] : null;
+        mpStatus('Si la partida empezara ahora, tu papel sería: ' + (myRole === 'killer'
+          ? 'LA SADAKO'
+          : 'SOBREVIVIENTE' + (myLk !== null ? ' con el look ' + LOOK_DEFS[myLk].name : '')) + '.');
+      }
+    } else if (d.t === 'full') {
+      mpStatus('Esa sala ya está llena (3 jugadores) o la partida ya empezó. Pide otro código o crea tu propia sala.');
+      $('mpWait').classList.add('hidden');
+      $('mpHome').classList.remove('hidden');
+      mp.busy = false;
     } else if (d.t === 'start') {
-      mpBegin(d.hostRole === 'surv' ? 'killer' : 'surv');
+      mp.mode = d.mode; mp.roles = d.roles;
+      if (d.map) { mp.map = d.map; if (d.map !== currentMap) applyMap(d.map); }
+      mpBegin(d.roles[mp.myId], d.roles, d.looks);
     } else if (d.t === 'restart') {
-      if (mp.active) startGame(S.role);
+      if (mp.active) { mp.mode = d.mode || mp.mode; mp.roles = d.roles || mp.roles; if (d.map) { mp.map = d.map; if (d.map !== currentMap) applyMap(d.map); } mpBegin(mp.roles[mp.myId], mp.roles, d.looks || mp.looks); }
     } else if (d.t === 'restartReq') {
-      if (mp.active && mp.isHost) { mpSend({ t: 'restart' }); startGame(S.role); }
+      if (mp.active && mp.isHost) mpHostRestart();
     }
   }
-  function mpOnConnClose() {
+  /* ---------- conexiones ---------- */
+  function mpOnHostGone() {
     if (mp.active && S.screen === 'playing') {
       mp.active = false;
-      endGame(false, 'El otro jugador se desconectó en mitad de la partida.');
+      endGame(false, mp.mode === 'coop'
+        ? 'El anfitrión se desconectó: la sala y la Sadako IA vivían en su navegador.'
+        : 'El anfitrión se desconectó en mitad de la partida.');
       $('endTitle').textContent = 'SIN CONEXIÓN';
       $('endTitle').style.color = '#ffb703';
       mpDestroyPeer();
+    } else if (mp.active) {
+      mpTeardown();
     } else if (!$('mpPanel').classList.contains('hidden')) {
-      mpStatus('El otro jugador se desconectó. Crea otra sala o únete a una nueva.');
+      mpStatus('El anfitrión cerró la sala. Crea otra sala o únete a una nueva.');
       $('mpWait').classList.add('hidden');
       $('mpHome').classList.remove('hidden');
       mp.busy = false;
     }
   }
   function mpWireConn(c) {
+    // Invitado: su única conexión es con el anfitrión
     mp.conn = c;
     c.on('data', mpOnData);
-    c.on('close', mpOnConnClose);
+    c.on('close', mpOnHostGone);
     c.on('error', function () { /* los errores de conexión se tratan en close */ });
   }
+  function mpWireGuestConn(c, gid) {
+    // Anfitrión: una conexión por invitado; procesa y reenvía
+    c.on('data', function (d) {
+      if (!d || !d.t) return;
+      d.from = gid;
+      mpOnData(d);
+      mpRelay(d, gid);
+    });
+    c.on('close', function () {
+      if (mpConns[gid] === c) delete mpConns[gid];
+      if (mp.started && mp.active) {
+        mpSend({ t: 'left', id: gid });
+        mpPlayerLeft(gid);
+      } else if (mp.isHost && !$('mpPanel').classList.contains('hidden')) {
+        mpBroadcastLobby();
+      }
+    });
+    c.on('error', function () { /* se trata en close */ });
+  }
   function mpDestroyPeer() {
+    for (var id in mpConns) { try { mpConns[id].close(); } catch (e) {} }
+    mpConns = {};
     if (mp.conn) { try { mp.conn.close(); } catch (e) {} mp.conn = null; }
     if (mp.peer) { try { mp.peer.destroy(); } catch (e) {} mp.peer = null; }
   }
   function mpTeardown() {
-    mp.active = false; mp.busy = false; mpBreak.idx = -1;
+    mp.active = false; mp.busy = false; mp.started = false; mpBreak.idx = -1;
+    mpHostOut = false; mpEnts = {}; mp.looks = null; mpLookPrefs = {}; mpRolesResetLabel();
     mpDestroyPeer();
     $('mpPanel').classList.add('hidden');
+  }
+  function mpRolesResetLabel() {
+    var lh = $('kInfoHitsLabel'); if (lh) lh.textContent = 'Golpes a tu presa:';
   }
   function mpGenCode() {
     var abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ', out = '';
@@ -2742,6 +4388,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     $('mpWait').classList.remove('hidden');
     $('mpWaitTitle').textContent = title;
     $('mpCode').textContent = code;
+    $('mpPlayers').textContent = '';
     $('mpStart').classList.add('hidden');
   }
   function mpOpenPanel() {
@@ -2755,21 +4402,91 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     $('mpWait').classList.add('hidden');
     $('mpPanel').classList.remove('hidden');
   }
+  /* ---------- sala: papeles y vestíbulo ---------- */
+  function mpGuestIds() { return Object.keys(mpConns).map(function (k) { return parseInt(k, 10); }).sort(); }
+  function mpPlayerCount() { return 1 + mpGuestIds().length; }
+  function mpProvisionalRoles() {
+    // Los papeles con los jugadores que hay AHORA (el definitivo se
+    // calcula igual en el momento de empezar)
+    var roles = {};
+    var guests = mpGuestIds();
+    if (mp.mode === 'coop') {
+      roles[0] = 'surv';
+      guests.forEach(function (id) { roles[id] = 'surv'; });
+    } else if (mp.hostRole === 'killer') {
+      roles[0] = 'killer';
+      guests.forEach(function (id) { roles[id] = 'surv'; });
+    } else {
+      roles[0] = 'surv';
+      if (guests.length) roles[guests[0]] = 'killer';
+      if (guests.length > 1) roles[guests[1]] = 'surv';
+    }
+    return roles;
+  }
+  function mpAssignLooks(roles) {
+    // Un look distinto por sobreviviente, SIN REPETIR, para no confundirse
+    // entre ustedes: se respeta la preferencia que cada quien eligió en su
+    // menú si está libre; si está tomada, el primer look libre. El orden
+    // es por id (anfitrión, luego invitados en orden de llegada) y el
+    // resultado viaja en los mensajes 'lobby', 'start' y 'restart'.
+    var looks = {}, used = {};
+    var ids = Object.keys(roles).map(function (k) { return parseInt(k, 10); }).sort(function (a, b) { return a - b; });
+    ids.forEach(function (id) {
+      if (roles[id] !== 'surv') return;
+      var pref = (typeof mpLookPrefs[id] === 'number') ? mpLookPrefs[id] : (id % 3);
+      var pick = -1;
+      if (!used[pref]) pick = pref;
+      else { for (var i = 0; i < 3; i++) { if (!used[i]) { pick = i; break; } } }
+      looks[id] = pick; used[pick] = true;
+    });
+    return looks;
+  }
+  function mpBroadcastLobby() {
+    var roles = mpProvisionalRoles();
+    var looks = mpAssignLooks(roles);
+    mpSend({ t: 'lobby', mode: mp.mode, map: mp.map, count: mpPlayerCount(), roles: roles, looks: looks });
+    mpUpdateLobbyUI(roles, looks);
+  }
+  function mpUpdateLobbyUI(roles, looks) {
+    roles = roles || mpProvisionalRoles();
+    looks = looks || mpAssignLooks(roles);
+    var lines = [];
+    [0].concat(mpGuestIds()).forEach(function (id) {
+      var line = (id === 0 ? 'Anfitrión (tú)' : 'Invitado ' + id) + ' — ' + (roles[id] === 'killer' ? 'LA SADAKO' : 'SOBREVIVIENTE');
+      if (roles[id] === 'surv' && typeof looks[id] === 'number') line += ' · Look: ' + LOOK_DEFS[looks[id]].name;
+      lines.push(line);
+    });
+    $('mpPlayers').innerHTML = 'Mapa: ' + (MAP_DEFS[mp.map] ? MAP_DEFS[mp.map].name : '') + '<br>Jugadores en la sala (' + mpPlayerCount() + '/3):<br>' + lines.join('<br>');
+    var full = mpPlayerCount() >= 3;
+    $('mpWaitTxt').textContent = 'Modo: ' + mpModeName(mp.mode) + '. ' +
+      (full ? '¡Sala llena! Ya están los 3: cuando quieras, empieza la partida.'
+            : 'Esperando a más jugadores… la partida empieza cuando estén los 3, o puedes iniciarla ya con 2.');
+    if (mpPlayerCount() >= 2) $('mpStart').classList.remove('hidden');
+    else $('mpStart').classList.add('hidden');
+  }
   function mpCreatePeer(tries) {
     mp.code = mpGenCode();
     mp.peer = new Peer(MP_PREFIX + mp.code);
     mp.peer.on('open', function () {
       mp.busy = false;
       mpShowWait(mp.code, 'TU SALA · COMPARTE EL CÓDIGO');
-      $('mpWaitTxt').textContent = 'Esperando a que el otro jugador se una… Jugarás como ' + (mp.hostRole === 'surv' ? 'SOBREVIVIENTE' : 'LA SADAKO') + '.';
+      mpUpdateLobbyUI();
       mpStatus('');
     });
     mp.peer.on('connection', function (c) {
-      mpWireConn(c);
+      var gid = mp.nextGuest;
       c.on('open', function () {
-        mpSend({ t: 'welcome', hostRole: mp.hostRole });
-        $('mpWaitTxt').textContent = '¡El otro jugador entró! Cuando quieras, empieza la partida.';
-        $('mpStart').classList.remove('hidden');
+        if (mp.started || gid > 2 || mpConns[gid]) {
+          // Sala llena (ya hay 2 invitados) o partida en curso: avisar y cerrar
+          try { c.send({ t: 'full', from: 0 }); } catch (e) {}
+          setTimeout(function () { try { c.close(); } catch (e) {} }, 400);
+          return;
+        }
+        mp.nextGuest++;
+        mpConns[gid] = c;
+        mpWireGuestConn(c, gid);
+        try { c.send({ t: 'welcome', id: gid, mode: mp.mode, map: mp.map, from: 0 }); } catch (e) {}
+        mpBroadcastLobby();
         mpStatus('');
       });
     });
@@ -2784,7 +4501,9 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     if (typeof Peer === 'undefined') { mpStatus('El servicio en línea no cargó. Recarga la página.'); return; }
     if (mp.busy) return;
     mpDestroyPeer();
-    mp.isHost = true; mp.hostRole = mp.roleChoice; mp.busy = true;
+    mp.isHost = true; mp.myId = 0; mp.nextGuest = 1; mp.started = false;
+    mp.mode = mp.modeChoice; mp.hostRole = mp.roleChoice; mp.map = currentMap; mp.busy = true;
+    mpLookPrefs = { 0: myLook }; mp.looks = null; // tu preferencia entra a la asignación de la sala
     mpStatus('Creando la sala…');
     mpCreatePeer(0);
   }
@@ -2794,7 +4513,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     var code = ($('mpCodeIn').value || '').trim().toUpperCase();
     if (code.length !== 4) { mpStatus('Escribe el código de 4 letras de la sala.'); return; }
     mpDestroyPeer();
-    mp.isHost = false; mp.code = code; mp.busy = true;
+    mp.isHost = false; mp.code = code; mp.busy = true; mp.started = false;
     mpShowWait(code, 'SALA ' + code);
     $('mpWaitTxt').textContent = 'Conectando con la sala…';
     mpStatus('');
@@ -2804,7 +4523,6 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
       mpWireConn(c);
       c.on('open', function () {
         mp.busy = false;
-        mpSend({ t: 'hello' });
         $('mpWaitTxt').textContent = 'Conectado a la sala. Esperando a que el anfitrión empiece…';
       });
     });
@@ -2819,23 +4537,86 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
       }
     });
   }
-  function mpBegin(role) {
-    mp.active = true;
+  /* ---------- empezar / reiniciar ---------- */
+  function mpBegin(role, roles, looks) {
+    mp.active = true; mp.started = true; mp.roles = roles;
+    mp.looks = looks || mpAssignLooks(roles);
+    mpHostOut = false; mpBreak.idx = -1;
     $('mpPanel').classList.add('hidden');
+    // Entidades remotas según los papeles: la Sadako usa su modelo; los
+    // sobrevivientes, las dos instancias del modelo (prey/prey2), cada una
+    // pintada con el look que la sala le asignó (sin repetir)
+    mpEnts = {};
+    var ids = Object.keys(roles).map(function (k) { return parseInt(k, 10); }).sort();
+    var survOrder = ids.filter(function (id) { return roles[id] === 'surv'; });
+    var remoteSurvN = 0;
+    ids.forEach(function (id) {
+      if (id === mp.myId) return;
+      var r = roles[id];
+      var e = { id: id, role: r, x: 0, z: 0, yaw: 0, tx: 0, tz: 0, tyaw: 0, act: '', health: 0, out: false, gone: false, how: '', atkT: 0, st: '' };
+      if (r === 'killer') { e.model = 'sadako'; e.ref = sadako; }
+      else { e.model = remoteSurvN === 0 ? 'surv0' : 'surv1'; e.ref = remoteSurvN === 0 ? prey : prey2; remoteSurvN++; }
+      var sp = mpSpawnFor(id, roles, survOrder);
+      e.x = sp[0]; e.z = sp[1]; e.tx = sp[0]; e.tz = sp[1]; e.tyaw = r === 'killer' ? 0 : Math.PI;
+      mpEnts[id] = e;
+    });
+    if (mp.mode === 'coop' && !mp.isHost) {
+      // Para el invitado, la Sadako IA no es un jugador: su entidad se
+      // alimenta de los mensajes 'sadako' del anfitrión
+      mpEnts.ai = { id: 'ai', role: 'killer', model: 'sadako', ref: sadako, x: 0, z: -14 * MS, yaw: 0, tx: 0, tz: -14 * MS, tyaw: 0, act: '', health: 0, out: false, gone: false, how: '', atkT: 0, st: 'patrol' };
+    }
     startGame(role);
-    // El remoto nace en su esquina: se sincroniza la mira de interpolación
-    if (role === 'killer') { mpRemote.tx = 0; mpRemote.tz = 14 * MS; mpRemote.tyaw = Math.PI; prey.x = 0; prey.z = 14 * MS; }
-    else { mpRemote.tx = 0; mpRemote.tz = -14 * MS; mpRemote.tyaw = 0; sadako.x = 0; sadako.z = -14 * MS; }
-    toast(role === 'killer'
-      ? 'EN LÍNEA · Eres la Sadako: el sobreviviente es el otro jugador. Dos golpes y es tuyo.'
-      : 'EN LÍNEA · La Sadako es el otro jugador. Haz las 5 tareas y escapa… si te deja.', 4600);
+    // Cada quien nace en su esquina (startGame solo conoce el duelo 1v1)
+    var mySp = mpSpawnFor(mp.myId, roles, survOrder);
+    player.x = mySp[0]; player.z = mySp[1];
+    player.yaw = role === 'killer' ? Math.PI : 0;
+    for (var id2 in mpEnts) {
+      var e2 = mpEnts[id2];
+      e2.ref.x = e2.tx; e2.ref.z = e2.tz;
+    }
+    if (sadakoGame) sadakoGame.visible = (role !== 'killer');
+    if (survGame) survGame.visible = mpHasModel('surv0');
+    if (survGame2) survGame2.visible = mpHasModel('surv1');
+    // Cada sobreviviente remoto se ve con SU look asignado en la sala
+    for (var idL in mpEnts) {
+      var eL = mpEnts[idL];
+      if (eL.role === 'surv' && typeof mp.looks[idL] === 'number') {
+        var mL = mpEntModel(eL);
+        if (mL.obj) applyLook(mL.obj, mp.looks[idL]);
+      }
+    }
+    if (role === 'killer') { var lh = $('kInfoHitsLabel'); if (lh) lh.textContent = 'Sobrevivientes atrapados:'; }
+    else mpRolesResetLabel();
+    updateTasks();
+    toast(mp.mode === 'coop'
+      ? 'EN LÍNEA · Cooperativo: los 3 contra la Sadako IA. Las tareas son del equipo: completen las 5 y escapen cada quien por su puerta.'
+      : (role === 'killer'
+        ? 'EN LÍNEA · Eres la Sadako: los sobrevivientes hacen las tareas en equipo. Atrapa a todos: 2 golpes a cada uno.'
+        : 'EN LÍNEA · La Sadako es otro jugador. Las tareas son del equipo: completen las 5 entre todos y escapen.'), 4600);
+  }
+  function mpHostRestart() {
+    if (!mp.roles) return;
+    var looks = mpAssignLooks(mp.roles);
+    mpSend({ t: 'restart', mode: mp.mode, map: mp.map, roles: mp.roles, looks: looks });
+    mpBegin(mp.roles[mp.myId], mp.roles, looks);
   }
   function mpRestart() {
-    if (mp.isHost) { mpSend({ t: 'restart' }); startGame(S.role); }
+    if (mp.isHost) mpHostRestart();
     else { mpSend({ t: 'restartReq' }); toast('Le pediste otra partida al anfitrión…', 2000); }
   }
   // Controles del panel multijugador
   $('mpClose').addEventListener('click', function () { if (!mp.active) mpTeardown(); else $('mpPanel').classList.add('hidden'); });
+  function mpSetMode(m) {
+    mp.modeChoice = m;
+    $('mpModeHunt').classList.toggle('sel', m === 'hunt');
+    $('mpModeCoop').classList.toggle('sel', m === 'coop');
+    $('mpRoleWrap').style.display = m === 'coop' ? 'none' : '';
+    $('mpModeDesc').innerHTML = m === 'coop'
+      ? 'Los <b>3 sobrevivientes</b> contra la <b>Sadako de la IA</b>: entre todos completan las 5 tareas y escapan; ella caza a cada uno con 2 golpes. La IA la sincroniza el anfitrión.'
+      : 'Uno de los 3 jugadores es <b>la Sadako</b> y caza a los otros 2 sobrevivientes: 2 golpes atrapan a cada uno. Los sobrevivientes ganan si completan las 5 tareas y escapan por una puerta.';
+  }
+  $('mpModeHunt').addEventListener('click', function () { mpSetMode('hunt'); });
+  $('mpModeCoop').addEventListener('click', function () { mpSetMode('coop'); });
   $('mpRoleSurv').addEventListener('click', function () { mp.roleChoice = 'surv'; $('mpRoleSurv').classList.add('sel'); $('mpRoleKiller').classList.remove('sel'); });
   $('mpRoleKiller').addEventListener('click', function () { mp.roleChoice = 'killer'; $('mpRoleKiller').classList.add('sel'); $('mpRoleSurv').classList.remove('sel'); });
   $('mpCreate').addEventListener('click', mpCreate);
@@ -2843,9 +4624,12 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
   $('mpCodeIn').addEventListener('input', function () { this.value = this.value.toUpperCase().replace(/[^A-Z]/g, ''); });
   $('mpCodeIn').addEventListener('keydown', function (e) { if (e.code === 'Enter') mpJoin(); e.stopPropagation(); });
   $('mpStart').addEventListener('click', function () {
-    if (!mp.conn || !mp.conn.open) { mpStatus('Todavía no hay nadie en la sala.'); return; }
-    mpSend({ t: 'start', hostRole: mp.hostRole });
-    mpBegin(mp.hostRole);
+    if (mpGuestIds().length < 1) { mpStatus('Todavía no hay nadie en la sala.'); return; }
+    var roles = mpProvisionalRoles();
+    var looks = mpAssignLooks(roles);
+    mp.map = currentMap; // el mapa de la sala es el que el anfitrión tiene elegido
+    mpSend({ t: 'start', mode: mp.mode, map: mp.map, roles: roles, looks: looks });
+    mpBegin(roles[0], roles, looks);
   });
 
   /* ================= FLUJO: MENÚ / PAUSA / REINICIO ================= */
@@ -2863,6 +4647,9 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     prey.x = 0; prey.z = 14 * MS; prey.yaw = Math.PI; prey.state = 'toTask';
     prey.taskIdx = -1; prey.doT = 0; prey.health = 0; prey.fleeT = 0; prey.flinchT = 0;
     prey.path = null; prey.pathI = 0; prey.repathT = 0; prey.stuckT = 0;
+    prey2.x = 3.5; prey2.z = 13 * MS; prey2.yaw = Math.PI; prey2.state = 'toTask';
+    prey2.taskIdx = -1; prey2.doT = 0; prey2.health = 0; prey2.fleeT = 0; prey2.flinchT = 0;
+    prey2.path = null; prey2.pathI = 0; prey2.repathT = 0; prey2.stuckT = 0;
     killer.atkCD = 0; killer.tvCD = 0; killer.swingT = 0;
     hitFxT = 0; hitMarkT = 0; camShake = 0; fovKick = 0;
     $('swingArm').style.opacity = '0'; $('hitFx').style.opacity = '0'; $('hitMark').style.opacity = '0';
@@ -2874,6 +4661,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     sadako.stalkT = 0; sadako.scareT = 2.5; sadako.flickT = 0;
     if (sadakoGame) sadakoGame.visible = (S.role !== 'killer');
     if (survGame) survGame.visible = (S.role === 'killer');
+    if (survGame2) survGame2.visible = false; // el multijugador lo enciende si hay un segundo remoto
     // Cada rincón conserva su minijuego (cada objeto, su ritual): solo se
     // repone su estado y el color ámbar de su anillo
     tasks.forEach(function (t) {
@@ -2908,18 +4696,43 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     buildNavGrid();
   }
   function rebuildColliders() {
-    CASITAS.forEach(function (c) {
-      obb(c[0], c[1], c[2], 2.4 * MS + 0.15, 2.2 * MS + 0.15);
-      [-0.53, 0.53].forEach(function (lx) {
-        var p = enCasita(c[0], c[1], c[2], lx * MS, 2.69 * MS);
-        obb(p[0], p[1], c[2], 0.09, 0.72 * MS);
+    // La parte fija depende del mapa: el claro usa sus casitas, cobertizo
+    // y cercas de siempre; la mansión y el hospital, sus muros y su
+    // mobiliario. En los tres casos, lo fijo también bloquea la visión
+    // de la Sadako (LOS_OBBS) y la cámara no entra en ello.
+    if (currentMap === 'claro') {
+      CASITAS.forEach(function (c) {
+        obb(c[0], c[1], c[2], 2.4 * MS + 0.15, 2.2 * MS + 0.15);
+        [-0.53, 0.53].forEach(function (lx) {
+          var p = enCasita(c[0], c[1], c[2], lx * MS, 2.69 * MS);
+          obb(p[0], p[1], c[2], 0.09, 0.72 * MS);
+        });
       });
-    });
-    obb(0, 0, 0, 3.6 * MS + 0.15, 2.6 * MS + 0.15);
-    [[-2.73, -3.22], [-1.67, -3.22], [-0.53, -3.22], [0.53, -3.22]].forEach(function (p) { obb(p[0] * MS, p[1] * MS, 0, 0.09, 0.76 * MS); });
-    obb(-1.1 * MS, -3.22 * MS, 0, 0.52 * MS, 0.76 * MS);
-    CERCAS.forEach(function (f) { obb(f[0], f[1], f[2], f[3] / 2, 0.1); });
-    gens.forEach(function (g) { if (g) obb(g.x, g.z, g.rot, 0.65, 0.45); });
+      obb(0, 0, 0, 3.6 * MS + 0.15, 2.6 * MS + 0.15);
+      [[-2.73, -3.22], [-1.67, -3.22], [-0.53, -3.22], [0.53, -3.22]].forEach(function (p) { obb(p[0] * MS, p[1] * MS, 0, 0.09, 0.76 * MS); });
+      obb(-1.1 * MS, -3.22 * MS, 0, 0.52 * MS, 0.76 * MS);
+      CERCAS.forEach(function (f) { obb(f[0], f[1], f[2], f[3] / 2, 0.1); });
+      LOS_OBBS = OBBS.slice(0, 13);
+    } else {
+      var def = MAP_DEFS[currentMap];
+      var losStart = OBBS.length;
+      def.walls.forEach(function (w) { obb(w[0] * MS, w[1] * MS, w[2], w[3] * MS / 2, 0.24); });
+      def.props.forEach(function (p) {
+        if (p.obb) obb(p.obb[0] * MS, p.obb[1] * MS, p.obb[2], p.obb[3] * MS, p.obb[4] * MS);
+      });
+      LOS_OBBS = OBBS.slice(losStart);
+    }
+    // Círculos del mapa + las televisiones como obstáculo
+    CIRCLES.length = 0;
+    if (currentMap === 'claro') {
+      CLARO_CIRCLES.forEach(function (c) { CIRCLES.push([c[0] * MS, c[1] * MS, c[2] * MS]); });
+    } else {
+      MAP_DEFS[currentMap].props.forEach(function (p) {
+        if (p.circle) CIRCLES.push([p.circle[0] * MS, p.circle[1] * MS, p.circle[2] * MS]);
+      });
+    }
+    TV_POS.forEach(function (tp) { CIRCLES.push([tp[0], tp[1], 0.38]); });
+    if (currentMap === 'claro') gens.forEach(function (g) { if (g) obb(g.x, g.z, g.rot, 0.65, 0.45); });
     tasks.forEach(function (t) { if (t) obb(t.x, t.z, t.rot, 0.6, 0.45); });
     pallets.forEach(function (p) { if (p) palletSetOBB(p); });
   }
@@ -2927,13 +4740,18 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     if (role) S.role = role;
     initAudio();
     resetGame();
-    if (mapGroup) mapGroup.visible = true;
+    if (mapGroup) mapGroup.visible = (currentMap === 'claro');
+    if (procGroup) procGroup.visible = (currentMap !== 'claro');
     if (showcase) showcase.visible = false;
-    gens.forEach(function (g) { if (g) g.group.visible = true; });
+    gens.forEach(function (g) { if (g) g.group.visible = (currentMap === 'claro'); });
     tasks.forEach(function (t) { if (t) t.group.visible = true; });
     pallets.forEach(function (p) { if (p) p.group.visible = true; });
     if (sadakoGame) sadakoGame.visible = (S.role !== 'killer');
     if (survGame) survGame.visible = (S.role === 'killer');
+    if (survGame2) survGame2.visible = false; // mpBegin lo enciende si la partida es de 3
+    // En solitario, la presa del modo Asesino lleva el look del menú; en
+    // línea manda la asignación de la sala (mpBegin, tras startGame)
+    if (S.role === 'killer' && !mp.active) applyLook(survGame, myLook);
     $('menu').classList.add('hidden');
     $('end').classList.add('hidden');
     $('pause').classList.add('hidden');
@@ -2949,14 +4767,14 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     $('hairFx').style.opacity = isK ? '0.55' : '0';
     $('fpsHint').textContent = isK
       ? 'WASD moverse · Ratón mirar · Shift deslizarse · E viajar por TV · Clic/F atacar · Esc pausa'
-      : 'WASD moverse · Ratón mirar · Shift correr · E tarea / pallet · Esc pausa';
+      : 'WASD moverse · Ratón mirar · Shift correr · E tarea / pallet · Esc pausa · F pantalla completa';
     $('btnUse').textContent = isK ? 'ATACAR' : 'USAR';
     S.screen = 'playing';
     S.started = true;
     updateTasks(); updateStatus();
     toast(isK
       ? 'Eres la Sadako. Él hará las 5 tareas: viaja por las teles y atrapalo con 2 golpes antes de que escape.'
-      : 'Completa las 5 tareas en los rincones del claro y escapa. La impostora acecha desde las televisiones…', 4600);
+      : 'Completa las 5 tareas de ' + MAP_DEFS[currentMap].name + ' y escapa. La impostora acecha desde las televisiones…', 4600);
     if (!isTouch) {
       canvas.requestPointerLock && canvas.requestPointerLock();
     }
@@ -2995,7 +4813,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     flash.position.set(0, 2.5, 3);
     flash.target.position.set(0, 1, 0);
     flash.userData.fill.position.set(0, 2, 2);
-    loadTotal = 23; // 5 cargas base + 8 motores decorativos + 10 pallets
+    loadTotal = 24; // 5 cargas base + 1 sobreviviente extra (3 jugadores) + 8 motores decorativos + 10 pallets
     showcase = new THREE.Group();
     scene.add(showcase);
     var menuGround = scene.getObjectByName('menuGround');
@@ -3013,6 +4831,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
       survModel.rotation.y = 0.5;
       survParts = collectParts(survModel, ['cabeza', 'pelo', 'brazo_derecho', 'mano_derecha', 'brazo_izquierdo', 'mano_izquierda', 'torso', 'pierna_derecha', 'pierna_izquierda', 'pie_derecho', 'pie_izquierdo']);
       storeHome(survParts, SURV_HOME);
+      applyLook(survModel, myLook); // el escaparate del menú lleva tu look
       showcase.add(survModel);
       loadProgress();
     }, function (e) { fail('No se pudo cargar el superviviente.', e); });
@@ -3046,10 +4865,22 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
       ground(survGame);
       survGameParts = collectParts(survGame, ['cabeza', 'pelo', 'brazo_derecho', 'mano_derecha', 'brazo_izquierdo', 'mano_izquierda', 'torso', 'pierna_derecha', 'pierna_izquierda', 'pie_derecho', 'pie_izquierdo']);
       storeHome(survGameParts, SURV_GAME_HOME);
+      applyLook(survGame, myLook); // la presa en solitario; en línea lo pisa mpBegin
       survGame.visible = false;
       scene.add(survGame);
       loadProgress();
     }, function (e) { fail('No se pudo cargar el superviviente del juego.', e); });
+    // Segundo sobreviviente del juego (el otro jugador remoto en partidas de 3)
+    loadGLB(GLB_SOBREVIVIENTE, function (gltf) {
+      survGame2 = gltf.scene;
+      scaleToHeight(survGame2, 1.72);
+      ground(survGame2);
+      survGame2Parts = collectParts(survGame2, ['cabeza', 'pelo', 'brazo_derecho', 'mano_derecha', 'brazo_izquierdo', 'mano_izquierda', 'torso', 'pierna_derecha', 'pierna_izquierda', 'pie_derecho', 'pie_izquierdo']);
+      storeHome(survGame2Parts, SURV_GAME2_HOME);
+      survGame2.visible = false;
+      scene.add(survGame2);
+      loadProgress();
+    }, function (e) { fail('No se pudo cargar el segundo superviviente del juego.', e); });
     // Mapa
     loadGLB(GLB_MAPA, function (gltf) {
       mapGroup = gltf.scene;
@@ -3061,6 +4892,14 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     // Los 8 motores decorativos y 10 pallets se cargan dentro de
     // buildWorld() y cada uno suma a loadProgress().
     $('miniClose').addEventListener('click', function () { closeMini(false); });
+    var lookBtns = document.querySelectorAll('.lookBtn');
+    for (var lb = 0; lb < lookBtns.length; lb++) {
+      lookBtns[lb].addEventListener('click', function () { setMyLook(parseInt(this.getAttribute('data-look'), 10)); });
+    }
+    var mapBtns = document.querySelectorAll('.mapBtn');
+    for (var mb = 0; mb < mapBtns.length; mb++) {
+      mapBtns[mb].addEventListener('click', function () { setMap(this.getAttribute('data-map')); });
+    }
     $('btnPlay').addEventListener('click', function () { startGame('surv'); });
     $('btnKiller').addEventListener('click', function () { startGame('killer'); });
     $('btnHow').addEventListener('click', function () { $('howto').classList.toggle('hidden'); });
@@ -3070,6 +4909,10 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     $('btnAgain').addEventListener('click', function () { if (mp.active) mpRestart(); else startGame(); });
     $('btnMP').addEventListener('click', mpOpenPanel);
     $('btnEndMenu').addEventListener('click', quitToMenu);
+    $('btnFSMenu').addEventListener('click', toggleFullscreen);
+    $('btnFSPause').addEventListener('click', toggleFullscreen);
+    $('btnFSTouch').addEventListener('click', toggleFullscreen);
+    updateFSButtons();
     updateTasks(); updateStatus();
     requestAnimationFrame(tick);
   }
@@ -3080,8 +4923,10 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
       if (!showcase) return;
       showcase.visible = true;
       if (mapGroup) mapGroup.visible = false;
+      if (procGroup) procGroup.visible = false;
       if (sadakoGame) sadakoGame.visible = false;
       if (survGame) survGame.visible = false;
+      if (survGame2) survGame2.visible = false;
       gens.forEach(function (g) { if (g) g.group.visible = false; });
       tasks.forEach(function (t) { if (t) t.group.visible = false; });
       pallets.forEach(function (p) { if (p) p.group.visible = false; });
@@ -3102,7 +4947,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAAAUmQEA6OYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
 
   // Gancho de depuración/auditoría (solo lectura/escritura para pruebas):
   // window.__pesadilla3d = { S, player, sadako, gens, pallets, OBBS, CIRCLES }
-  window.__pesadilla3d = { S: S, player: player, sadako: sadako, prey: prey, killer: killer, gens: gens, tasks: tasks, pallets: pallets, OBBS: OBBS, CIRCLES: CIRCLES, findPath: findPath, navBlocked: navBlocked, collide: collide, motor: function () { return motor; }, MS: MS, TV_POS: TV_POS, tvs: function () { return tvScreens; }, openMini: openMini, closeMini: closeMini, startGame: startGame, killerAttack: killerAttack, sab: function () { return { sabT: sabT, lightsOut: lightsOut, doorSab: doorSab }; } };
+  window.__pesadilla3d = { S: S, player: player, sadako: sadako, prey: prey, killer: killer, gens: gens, tasks: tasks, pallets: pallets, OBBS: OBBS, CIRCLES: CIRCLES, findPath: findPath, navBlocked: navBlocked, collide: collide, motor: function () { return motor; }, MS: MS, TV_POS: TV_POS, tvs: function () { return tvScreens; }, openMini: openMini, closeMini: closeMini, startGame: startGame, applyLook: applyLook, setMyLook: setMyLook, myLook: function () { return myLook; }, lookModels: function () { return { menu: survModel, game: survGame, game2: survGame2 }; }, mpLooks: function () { return { looks: mp.looks, prefs: mpLookPrefs, ents: mpEnts }; }, killerAttack: killerAttack, sab: function () { return { sabT: sabT, lightsOut: lightsOut, doorSab: doorSab }; }, map: function () { return currentMap; }, applyMap: applyMap, openMiniAt: function (i) { return openMini(i); } };
 })();
 
 </script>
