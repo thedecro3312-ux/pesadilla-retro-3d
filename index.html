@@ -156,8 +156,12 @@
   #preyCount{font-size:12.5px;font-weight:800;color:#fff}
   #killerInfo{background:var(--panel);border:1px solid rgba(255,42,42,.4);border-radius:10px;padding:8px 11px;font-family:system-ui,sans-serif;font-size:12.5px;line-height:1.55;color:#d5d8dc;backdrop-filter:blur(6px);max-width:min(310px,54vw)}
   #killerInfo b{color:#ffb3b3}
-  /* ---------- botón volver a la Sala de Juegos (menú, pausa y fin) ---------- */
-  .salaBtn{position:absolute;top:14px;left:14px;z-index:5;background:rgba(26,7,7,.92);border:1px solid #7f1d1d;color:#ffd9d9;border-radius:999px;padding:13px 22px;font-size:16px;font-weight:800;cursor:pointer;min-height:52px;letter-spacing:.03em;box-shadow:0 4px 16px rgba(0,0,0,.6)}
+  /* ---------- botón volver a la Sala de Juegos: UNO solo, fijo y global ----------
+     Vive fuera de los overlays, con position:fixed y z-index alto, así se ve
+     igual en el menú, la pausa, el fin y sobre el diálogo multijugador.
+     Durante la partida en curso se oculta (el bucle lo sincroniza): con el
+     ratón bloqueado no se puede pulsar y en móvil taparía la lista de tareas. */
+  .salaBtn{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:calc(10px + env(safe-area-inset-left,0px));z-index:90;background:rgba(26,7,7,.92);border:1px solid #7f1d1d;color:#ffd9d9;border-radius:999px;padding:13px 22px;font-size:16px;font-weight:800;cursor:pointer;min-height:52px;letter-spacing:.03em;box-shadow:0 4px 16px rgba(0,0,0,.6)}
   .salaBtn:hover{border-color:#ff2a2a;background:#2a0808;color:#fff}
   .btn.killer{background:#1c0505;border-color:#7f1d1d;color:#ffb3b3}
   .btn.killer:hover{border-color:#ff2a2a;background:#2a0808}
@@ -200,8 +204,8 @@
   .foto{appearance:none;height:76px;min-height:76px;padding:0;border-radius:5px;border:1px solid rgba(255,255,255,.3);cursor:pointer;background:radial-gradient(ellipse 32% 40% at 50% 36%,#04050a 62%,transparent 63%),radial-gradient(ellipse 60% 34% at 50% 96%,#04050a 60%,transparent 61%),linear-gradient(160deg,#434a55,#14161c);transition:transform .25s,opacity .25s}
   .foto.torn{transform:rotate(-16deg) translateY(12px) !important;opacity:.22;pointer-events:none}
   /* ---------- multijugador en línea (PeerJS) ---------- */
-  #mpPanel{position:absolute;inset:0;z-index:45;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);padding:14px}
-  #mpCard{width:min(480px,94vw);max-height:92vh;overflow:auto;background:var(--panel2);border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:16px 18px;font-family:system-ui,sans-serif;box-shadow:0 18px 50px rgba(0,0,0,.7)}
+  #mpPanel{position:absolute;inset:0;z-index:45;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);padding:10px;overflow-y:auto}
+  #mpCard{width:min(480px,94vw);max-height:calc(100vh - 20px);max-height:calc(100dvh - 20px);overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--panel2);border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:16px 18px;font-family:system-ui,sans-serif;box-shadow:0 18px 50px rgba(0,0,0,.7)}
   .mpHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
   .mpTitle{font-size:14px;font-weight:800;letter-spacing:.1em;color:#ffe9a8}
   #mpClose{appearance:none;border:1px solid var(--line);background:#22262e;color:#fff;border-radius:8px;width:40px;height:40px;min-height:40px;font-size:16px;cursor:pointer;flex:none}
@@ -240,11 +244,23 @@
     #prompt{bottom:31%}
     #fpsHint{display:none}
   }
+  /* Pantallas bajas (móvil apaisado, webviews con chrome): el diálogo
+     multijugador se ancla arriba y se desplaza, con el código y los textos
+     más compactos, para que CREAR/UNIRSE/EMPEZAR/SALIR queden alcanzables */
+  @media (max-height:600px){
+    #mpPanel{align-items:flex-start;padding:8px}
+    #mpCard{padding:12px 14px;max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px)}
+    #mpCode{font-size:32px;padding:2px 0 4px}
+    .mpTxt{margin-bottom:8px}
+    #mpStatus{margin-top:8px}
+  }
 </style>
 </head>
 <body>
 <div id="app">
   <canvas id="scene"></canvas>
+  <!-- Botón fijo global a la Sala de Juegos: fuera de los overlays, visible en menú, pausa, fin y sobre el diálogo multijugador -->
+  <button class="salaBtn" id="salaBtnFixed" onclick="window.location.href='https://thedecro3312-ux.github.io/sala-de-juegos/'">← Sala de Juegos</button>
 
   <div id="vignette"></div>
   <div id="bloodEdge"></div>
@@ -364,9 +380,21 @@
       <div id="mpWait" class="hidden">
         <div class="taskHead" id="mpWaitTitle">TU SALA · COMPARTE EL CÓDIGO</div>
         <div id="mpCode">····</div>
+        <div class="row" style="margin-bottom:10px">
+          <button class="btn" id="mpCopy">COPIAR CÓDIGO</button>
+          <button class="btn ghost" id="mpLeave">SALIR DE LA SALA</button>
+        </div>
+        <div id="mpLeaveConfirm" class="hidden">
+          <p class="mpTxt" style="color:#ffb3b3"><b>La partida ya empezó.</b> Si sales ahora, abandonas la partida en curso. ¿Seguro que quieres salir de la sala?</p>
+          <div class="row" style="margin-bottom:10px">
+            <button class="btn primary" id="mpLeaveYes">SÍ, SALIR DE LA SALA</button>
+            <button class="btn ghost" id="mpLeaveNo">SEGUIR EN LA SALA</button>
+          </div>
+        </div>
         <p class="mpTxt" id="mpWaitTxt">Esperando a que los demás jugadores se unan…</p>
         <p class="mpTxt" id="mpPlayers"></p>
         <button class="btn primary hidden" id="mpStart" style="width:100%">EMPEZAR PARTIDA</button>
+        <p class="mpTxt" style="margin-top:10px;font-size:12px;color:var(--muted)">La sala se cierra sola si pasan 10 minutos de espera sin que empiece la partida.</p>
       </div>
       <div id="mpStatus"></div>
     </div>
@@ -374,7 +402,6 @@
 
   <!-- MENÚ -->
   <div id="menu" class="overlay">
-    <button class="salaBtn" onclick="window.location.href='https://thedecro3312-ux.github.io/sala-de-juegos/'">← Sala de Juegos</button>
     <h1>PESADILLA <span class="blood">RETRO</span> 3D</h1>
     <p class="sub" id="menuSub">El Claro de la Niebla · sobrevive… o sé la impostora</p>
     <p id="menuDesc">Los motores del claro ya son solo ruinas decorativas: ninguna tarea vive en ellos. Como <b>sobreviviente</b>, completa las tareas en los rincones del ritual repartidos por el claro —altares de velas, la cinta maldita, el sello de sal, las fotos, el santuario…—, que cambian en cada partida, abre las puertas y escapa de la impostora, que no corre a cazarte: ACECHA desde las televisiones y solo ataca cuando ya está encima de ti. O al revés: en el <b>modo Asesino</b> TÚ eres la Sadako: sales de las teles, lo acechas entre la niebla y lo atrapas con dos golpes antes de que termine y escape.</p>
@@ -475,7 +502,6 @@
 
   <!-- PAUSA -->
   <div id="pause" class="overlay hidden">
-    <button class="salaBtn" onclick="window.location.href='https://thedecro3312-ux.github.io/sala-de-juegos/'">← Sala de Juegos</button>
     <h2>PAUSA</h2>
     <p>La niebla te espera…</p>
     <div class="row">
@@ -488,7 +514,6 @@
 
   <!-- FIN -->
   <div id="end" class="overlay hidden">
-    <button class="salaBtn" onclick="window.location.href='https://thedecro3312-ux.github.io/sala-de-juegos/'">← Sala de Juegos</button>
     <h1 id="endTitle">ESCAPASTE</h1>
     <p id="endText"></p>
     <p class="sub" id="endStats"></p>
@@ -5184,11 +5209,16 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAABE/gIAiKkBAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
 
   /* ================= BUCLE PRINCIPAL ================= */
   var lastT = 0, menuAngle = 0;
+  var salaBtnEl = null;
   function tick(now) {
     requestAnimationFrame(tick);
     var dt = Math.min(0.05, (now - lastT) / 1000 || 0.016);
     lastT = now;
     S.time += dt; // avanza siempre: anima también el menú
+    // El botón fijo de la Sala se ve en menú, pausa, fin y sobre el diálogo
+    // multijugador; solo se oculta mientras la partida está en curso
+    if (!salaBtnEl) salaBtnEl = $('salaBtnFixed');
+    if (salaBtnEl) salaBtnEl.classList.toggle('hidden', S.screen === 'playing');
     if (S.screen === 'menu' || S.screen === 'end') {
       menuAngle += dt * 0.25;
       updateTVs(dt);
@@ -5636,7 +5666,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAABE/gIAiKkBAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
      se va el anfitrión, la partida termina avisando (la sala vive en su
      navegador). Sin servidor propio: conexión directa entre navegadores. */
   var MP_PREFIX = 'pesadilla3d2-';
-  var mp = { active: false, peer: null, conn: null, isHost: false, mode: 'hunt', modeChoice: 'hunt', hostRole: 'surv', roleChoice: 'surv', code: '', busy: false, myId: 0, started: false, roles: null, looks: null, nextGuest: 1, map: 'claro' };
+  var mp = { active: false, peer: null, conn: null, isHost: false, mode: 'hunt', modeChoice: 'hunt', hostRole: 'surv', roleChoice: 'surv', code: '', busy: false, myId: 0, started: false, roles: null, looks: null, nextGuest: 1, map: 'claro', waitingSince: 0 };
   var mpLookPrefs = {}; // look preferido por jugador (el del menú); el anfitrión asigna sin repetir
   var mpConns = {};   // solo el anfitrión: id de invitado -> conexión
   var mpEnts = {};    // jugadores remotos por id: {id, role, model, ref, tx, tz, tyaw, act, health, out, gone, how, atkT, st}
@@ -6122,10 +6152,52 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAABE/gIAiKkBAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     if (mp.peer) { try { mp.peer.destroy(); } catch (e) {} mp.peer = null; }
   }
   function mpTeardown() {
+    mpRoomWatchStop();
     mp.active = false; mp.busy = false; mp.started = false; mpBreak.idx = -1;
     mpHostOut = false; mpEnts = {}; mp.looks = null; mpLookPrefs = {}; mpRolesResetLabel();
     mpDestroyPeer();
+    $('mpLeaveConfirm').classList.add('hidden');
     $('mpPanel').classList.add('hidden');
+  }
+  /* ---------- caducidad de la sala en espera (10 minutos) ----------
+     Una sala que se queda esperando sin que empiece la partida se cierra
+     sola: si eres el anfitrión y nadie se ha unido, el reloj corre desde
+     que la sala quedó vacía (con jugadores dentro no caduca); si eres
+     invitado, corre desde que entraste a esperar. Al caducar se destruye
+     el peer y se vuelve a la vista de crear/unirse con el aviso. */
+  var MP_ROOM_TTL = 10 * 60 * 1000;
+  var mpRoomTimer = null;
+  function mpRoomWatchStart() {
+    mpRoomWatchStop();
+    mp.waitingSince = Date.now();
+    mpRoomTimer = setInterval(function () {
+      if (!mp.peer || mp.started || mp.active) return;
+      if ($('mpWait').classList.contains('hidden')) return; // solo caduca en la pantalla de espera
+      if (mp.isHost && mpPlayerCount() > 1) { mp.waitingSince = Date.now(); return; } // con jugadores dentro, la sala no está vacía
+      if (Date.now() - mp.waitingSince >= MP_ROOM_TTL) mpExpireRoom();
+    }, 5000);
+  }
+  function mpRoomWatchStop() { if (mpRoomTimer) { clearInterval(mpRoomTimer); mpRoomTimer = null; } }
+  function mpExpireRoom() {
+    var wasHost = mp.isHost;
+    mpExitRoom(wasHost
+      ? 'La sala caducó: pasaron 10 minutos sin que se uniera ningún jugador y se cerró sola. Crea una sala nueva cuando quieras jugar.'
+      : 'La espera caducó: pasaron 10 minutos y la partida no empezó, así que saliste de la sala. Pide un código nuevo o crea tu propia sala.');
+  }
+  /* ---------- salir de la sala (flujo uniforme) ----------
+     SALIR DE LA SALA siempre visible en la espera. Sin partida en curso,
+     sales al momento y vuelves a la vista de crear/unirse; con la partida
+     ya empezada, primero confirmas dentro del propio panel. */
+  function mpExitRoom(msg) {
+    mpTeardown(); // destruye el peer y limpia el estado (también oculta el panel)
+    $('mpPanel').classList.remove('hidden');
+    $('mpWait').classList.add('hidden');
+    $('mpHome').classList.remove('hidden');
+    mpStatus(msg || '');
+  }
+  function mpLeaveRoom() {
+    if (mp.started) { $('mpLeaveConfirm').classList.remove('hidden'); return; }
+    mpExitRoom('Saliste de la sala. Crea una nueva o únete a otra cuando quieras.');
   }
   function mpRolesResetLabel() {
     var lh = $('kInfoHitsLabel'); if (lh) lh.textContent = 'Golpes a tu presa:';
@@ -6138,6 +6210,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAABE/gIAiKkBAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
   function mpShowWait(code, title) {
     $('mpHome').classList.add('hidden');
     $('mpWait').classList.remove('hidden');
+    $('mpLeaveConfirm').classList.add('hidden');
     $('mpWaitTitle').textContent = title;
     $('mpCode').textContent = code;
     $('mpPlayers').textContent = '';
@@ -6224,6 +6297,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAABE/gIAiKkBAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
       mpShowWait(mp.code, 'TU SALA · COMPARTE EL CÓDIGO');
       mpUpdateLobbyUI();
       mpStatus('');
+      mpRoomWatchStart(); // la sala vacía caduca a los 10 minutos de espera
     });
     mp.peer.on('connection', function (c) {
       var gid = mp.nextGuest;
@@ -6276,6 +6350,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAABE/gIAiKkBAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
       c.on('open', function () {
         mp.busy = false;
         $('mpWaitTxt').textContent = 'Conectado a la sala. Esperando a que el anfitrión empiece…';
+        mpRoomWatchStart(); // si la partida no empieza en 10 minutos, la espera caduca
       });
     });
     mp.peer.on('error', function (err) {
@@ -6291,6 +6366,7 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAABE/gIAiKkBAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
   }
   /* ---------- empezar / reiniciar ---------- */
   function mpBegin(role, roles, looks) {
+    mpRoomWatchStop(); // la partida empezó: la sala ya no puede caducar
     mp.active = true; mp.started = true; mp.roles = roles;
     mp.looks = looks || mpAssignLooks(roles);
     mpHostOut = false; mpBreak.idx = -1;
@@ -6385,6 +6461,28 @@ var GLB_SOBREVIVIENTE = "Z2xURgIAAABE/gIAiKkBAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiI
     mpSend({ t: 'start', mode: mp.mode, map: mp.map, roles: roles, looks: looks, diff: difficulty, tasks: pendingTaskSel });
     mpBegin(roles[0], roles, looks);
   });
+  $('mpCopy').addEventListener('click', function () {
+    var code = (mp.code || $('mpCode').textContent || '').trim();
+    if (!code || code === '····') { mpStatus('Todavía no hay ningún código que copiar.'); return; }
+    function ok() { mpStatus('Código ' + code + ' copiado: pásalo a tus amigos para que se unan a la sala.'); }
+    function manual() { mpStatus('Tu código es ' + code + ': apúntalo y pásalo a tus amigos para que se unan a la sala.'); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).then(ok, manual);
+    else manual();
+  });
+  $('mpLeave').addEventListener('click', mpLeaveRoom);
+  $('mpLeaveNo').addEventListener('click', function () { $('mpLeaveConfirm').classList.add('hidden'); });
+  $('mpLeaveYes').addEventListener('click', function () {
+    $('mpLeaveConfirm').classList.add('hidden');
+    // Confirmado con la partida en curso: se abandona la partida y se
+    // vuelve al menú (quitToMenu desmonta la sala); si no hay partida en
+    // pantalla, basta con volver a la vista de crear/unirse
+    if (S.screen === 'playing' || S.screen === 'paused' || S.screen === 'end') quitToMenu();
+    else mpExitRoom('Saliste de la sala. Crea una nueva o únete a otra cuando quieras.');
+  });
+  // Al cerrar la página se destruye el peer: la sala no queda fantasma
+  // en el servicio ni el código ocupado para los demás
+  window.addEventListener('pagehide', function () { mpDestroyPeer(); });
+  window.addEventListener('beforeunload', function () { mpDestroyPeer(); });
 
   /* ================= FLUJO: MENÚ / PAUSA / REINICIO ================= */
   function resetGame() {
