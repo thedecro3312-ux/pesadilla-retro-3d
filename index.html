@@ -22,7 +22,7 @@
   .hidden{display:none !important}
 
   /* ---------- overlays de pantalla completa ---------- */
-  .overlay{position:absolute;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;text-align:center;background:radial-gradient(ellipse at 50% 40%, rgba(20,4,8,.55), rgba(0,0,0,.88));}
+  .overlay{position:absolute;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:78px 20px 20px;text-align:center;background:radial-gradient(ellipse at 50% 40%, rgba(20,4,8,.55), rgba(0,0,0,.88));}
   /* El menú creció con el selector de look: si el contenido no cabe en la
      pantalla (móvil), se alinea arriba y se puede desplazar hasta el
      último botón en vez de quedar cortado */
@@ -156,6 +156,9 @@
   #preyCount{font-size:12.5px;font-weight:800;color:#fff}
   #killerInfo{background:var(--panel);border:1px solid rgba(255,42,42,.4);border-radius:10px;padding:8px 11px;font-family:system-ui,sans-serif;font-size:12.5px;line-height:1.55;color:#d5d8dc;backdrop-filter:blur(6px);max-width:min(310px,54vw)}
   #killerInfo b{color:#ffb3b3}
+  /* ---------- botón volver a la Sala de Juegos (menú, pausa y fin) ---------- */
+  .salaBtn{position:absolute;top:14px;left:14px;z-index:5;background:rgba(26,7,7,.92);border:1px solid #7f1d1d;color:#ffd9d9;border-radius:999px;padding:13px 22px;font-size:16px;font-weight:800;cursor:pointer;min-height:52px;letter-spacing:.03em;box-shadow:0 4px 16px rgba(0,0,0,.6)}
+  .salaBtn:hover{border-color:#ff2a2a;background:#2a0808;color:#fff}
   .btn.killer{background:#1c0505;border-color:#7f1d1d;color:#ffb3b3}
   .btn.killer:hover{border-color:#ff2a2a;background:#2a0808}
   /* ---------- panel de minijuego de tarea ---------- */
@@ -371,6 +374,7 @@
 
   <!-- MENÚ -->
   <div id="menu" class="overlay">
+    <button class="salaBtn" onclick="window.location.href='https://thedecro3312-ux.github.io/sala-de-juegos/'">← Sala de Juegos</button>
     <h1>PESADILLA <span class="blood">RETRO</span> 3D</h1>
     <p class="sub" id="menuSub">El Claro de la Niebla · sobrevive… o sé la impostora</p>
     <p id="menuDesc">Los motores del claro ya son solo ruinas decorativas: ninguna tarea vive en ellos. Como <b>sobreviviente</b>, completa las tareas en los rincones del ritual repartidos por el claro —altares de velas, la cinta maldita, el sello de sal, las fotos, el santuario…—, que cambian en cada partida, abre las puertas y escapa de la impostora, que no corre a cazarte: ACECHA desde las televisiones y solo ataca cuando ya está encima de ti. O al revés: en el <b>modo Asesino</b> TÚ eres la Sadako: sales de las teles, lo acechas entre la niebla y lo atrapas con dos golpes antes de que termine y escape.</p>
@@ -471,6 +475,7 @@
 
   <!-- PAUSA -->
   <div id="pause" class="overlay hidden">
+    <button class="salaBtn" onclick="window.location.href='https://thedecro3312-ux.github.io/sala-de-juegos/'">← Sala de Juegos</button>
     <h2>PAUSA</h2>
     <p>La niebla te espera…</p>
     <div class="row">
@@ -483,6 +488,7 @@
 
   <!-- FIN -->
   <div id="end" class="overlay hidden">
+    <button class="salaBtn" onclick="window.location.href='https://thedecro3312-ux.github.io/sala-de-juegos/'">← Sala de Juegos</button>
     <h1 id="endTitle">ESCAPASTE</h1>
     <p id="endText"></p>
     <p class="sub" id="endStats"></p>
