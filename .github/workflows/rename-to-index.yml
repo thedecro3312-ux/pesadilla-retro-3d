@@ -1,0 +1,22 @@
+name: Replace index with new version
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  replace:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace index.html with new version
+        run: |
+          git config user.name "thedecro3312-ux"
+          git config user.email "thedecro3312-ux@users.noreply.github.com"
+          git rm -f index.html
+          git mv pesadilla-retro-3d.html index.html
+          git add -A
+          git commit -m "Replace index.html with new version"
+          git push
