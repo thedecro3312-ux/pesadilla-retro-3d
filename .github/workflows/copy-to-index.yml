@@ -1,0 +1,19 @@
+name: Copy to index
+on:
+  workflow_dispatch:
+jobs:
+  copy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Copy file to index.html
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          cp pesadilla-retro-3d-2.html index.html
+          rm pesadilla-retro-3d-2.html
+          git add index.html pesadilla-retro-3d-2.html
+          git commit -m "Reemplazar index.html con la nueva versión corregida"
+          git push
