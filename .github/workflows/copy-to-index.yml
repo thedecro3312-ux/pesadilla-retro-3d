@@ -1,0 +1,24 @@
+name: Copy to index
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  copy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Copiar el archivo subido a index.html
+        run: |
+          cp pesadilla-retro-3d.html index.html
+          rm pesadilla-retro-3d.html
+      - name: Confirmar index.html
+        run: |
+          git config user.name "thedecro3312-ux"
+          git config user.email "thedecro3312-ux@users.noreply.github.com"
+          git add index.html pesadilla-retro-3d.html
+          git commit -m "Reemplazar index.html con la nueva versión (botón Sala de Juegos)" || echo "Sin cambios"
+          git push
